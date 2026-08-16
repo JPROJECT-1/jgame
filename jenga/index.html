@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <!-- SEO Standar -->
+    <title>Jenga 3D Pro - JASONPW</title>
+    <meta name="description" content="Mainkan Jenga 3D Pro buatan JASONPW. Game web fisika realistis dengan efek angin dan getaran.">
+    <meta name="keywords" content="Jenga 3D, JASONPW, Game Web, HTML5 Game, Three.js, Cannon.js, Jason Putra Wijaya, Portofolio Game">
+    <meta name="author" content="Jason Putra Wijaya">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://play.jasonpw.web.id/jenga/">
+    
+    <!-- Favicon & Icons -->
+    <link rel="icon" href="https://jasonpw.web.id/favicon.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" href="https://jasonpw.web.id/favicon.ico">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://play.jasonpw.web.id/jenga/">
+    <meta property="og:title" content="Jenga 3D Pro - JASONPW">
+    <meta property="og:description" content="Berani adu mekanik? Mainkan Jenga 3D dengan fisika realistis, atur angin dan getaran! Dibuat oleh JASONPW.">
+    <meta property="og:image" content="https://jasonpw.web.id/favicon.ico">
+
+    <!-- Twitter Cards -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://play.jasonpw.web.id/jenga/">
+    <meta name="twitter:title" content="Jenga 3D Pro - JASONPW">
+    <meta name="twitter:description" content="Berani adu mekanik? Mainkan Jenga 3D dengan fisika realistis, atur angin dan getaran! Dibuat oleh JASONPW.">
+    <meta name="twitter:image" content="https://jasonpw.web.id/favicon.ico">
+
+    <!-- Schema.org Markup for VideoGame -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "VideoGame",
+        "name": "Jenga 3D Pro",
+        "url": "https://play.jasonpw.web.id/jenga/",
+        "image": "https://jasonpw.web.id/favicon.ico",
+        "description": "Game Jenga 3D berbasis web dengan fisika realistis, fitur angin, dan getaran tangan. Dibuat menggunakan Three.js dan Cannon.js.",
+        "genre": "Puzzle",
+        "playMode": "SinglePlayer",
+        "author": {
+            "@type": "Person",
+            "name": "Jason Putra Wijaya",
+            "url": "https://jasonpw.web.id/"
+        },
+        "publisher": {
+            "@type": "Person",
+            "name": "JASONPW"
+        }
+    }
+    </script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
+                "cannon-es": "https://unpkg.com/cannon-es@0.20.0/dist/cannon-es.js"
+            }
+        }
+    </script>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #111827; font-family: 'Plus Jakarta Sans', sans-serif; touch-action: none; }
+        
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+        .bento-box {
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 1.25rem;
+        }
+        
+        .hud-panel {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-gradient {
+            background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .btn-gradient:active { transform: scale(0.95); }
+        
+        .screen-ui { transition: opacity 0.5s ease, transform 0.5s ease; }
+        .hidden-screen { opacity: 0; pointer-events: none; transform: scale(0.95); position: absolute; z-index: -1; }
+        .active-screen { 
+            opacity: 1; pointer-events: auto; transform: scale(1); position: absolute; inset: 0; z-index: 50; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            /* Background transparan agar Jenga di belakang terlihat */
+            background: rgba(17, 24, 39, 0.3); 
+        }
+    </style>
+</head>
+<body class="text-white antialiased">
+
+    <!-- 1. START MENU -->
+    <div id="screen-start" class="screen-ui active-screen">
+        <div class="glass-panel p-6 sm:p-10 rounded-[2rem] text-center max-w-sm w-[92%]">
+            <img src="https://jasonpw.web.id/favicon.ico" alt="JASONPW Logo" class="w-12 h-12 mx-auto mb-3 rounded-xl shadow-lg">
+            <h2 class="text-[10px] sm:text-xs font-bold tracking-[0.2em] text-slate-400 mb-2 uppercase">JASONPW</h2>
+            <h1 class="text-5xl sm:text-6xl font-extrabold mb-8 text-transparent bg-clip-text bg-gradient-to-br from-blue-400 to-indigo-500 drop-shadow-lg">JENGA</h1>
+            
+            <button onclick="switchScreen('screen-settings')" class="btn-gradient w-full py-4 rounded-2xl font-bold text-sm sm:text-lg shadow-[0_0_20px_rgba(99,102,241,0.3)] mb-4">PLAY NOW</button>
+            
+            <a href="https://jasonpw.web.id/" target="_blank" rel="noopener noreferrer" class="inline-block text-[11px] font-medium text-slate-400 hover:text-blue-400 transition-colors">
+                🌐 Visit Portfolio
+            </a>
+        </div>
+    </div>
+
+    <!-- 2. SETTINGS MENU -->
+    <div id="screen-settings" class="screen-ui hidden-screen">
+        <div class="glass-panel p-6 sm:p-8 rounded-[2rem] max-w-sm w-[92%]">
+            <h2 class="text-xl sm:text-2xl font-bold mb-6 text-center text-slate-100">Environment</h2>
+            
+            <div class="space-y-4 mb-8">
+                <div class="bento-box p-4 sm:p-5">
+                    <div class="flex justify-between text-xs sm:text-sm font-semibold mb-3 text-slate-300">
+                        <span>🌬️ Wind</span>
+                        <span id="windVal" class="text-blue-400">0</span>
+                    </div>
+                    <input type="range" id="wind" min="0" max="10" value="0" class="w-full h-2 bg-slate-800 rounded-lg appearance-none accent-blue-500">
+                </div>
+                <div class="bento-box p-4 sm:p-5">
+                    <div class="flex justify-between text-xs sm:text-sm font-semibold mb-3 text-slate-300">
+                        <span>🫨 Shake</span>
+                        <span id="shakeVal" class="text-indigo-400">0</span>
+                    </div>
+                    <input type="range" id="shake" min="0" max="4" step="0.5" value="0" class="w-full h-2 bg-slate-800 rounded-lg appearance-none accent-indigo-500">
+                </div>
+            </div>
+
+            <button onclick="startGame()" class="btn-gradient w-full py-4 rounded-2xl font-bold text-sm sm:text-lg">START GAME</button>
+            <button onclick="switchScreen('screen-start')" class="mt-4 w-full py-3 text-xs sm:text-sm font-medium text-slate-400 hover:text-white transition-colors">Back</button>
+        </div>
+    </div>
+
+    <!-- 3. GAME UI (HUD) -->
+    <div id="screen-game" class="screen-ui hidden-screen !bg-transparent !pointer-events-none !justify-start p-4 sm:p-6">
+        <div class="w-full flex justify-between items-start pointer-events-auto">
+            <div class="hud-panel px-4 sm:px-5 py-2 sm:py-3 flex flex-col items-center min-w-[70px]">
+                <span class="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1">Score</span>
+                <span id="score-display" class="text-2xl sm:text-3xl font-extrabold text-emerald-400 leading-none">0</span>
+                <span id="time-display" class="text-[9px] sm:text-[10px] text-slate-500 font-medium mt-1">00:00</span>
+            </div>
+            <button onclick="triggerGameOver(true)" class="hud-panel px-4 sm:px-5 py-2 sm:py-3 text-xs sm:text-sm font-bold text-rose-400 hover:bg-slate-700/50 active:scale-95 transition-all">
+                End Game
+            </button>
+        </div>
+        <div id="instruction" class="absolute bottom-10 left-1/2 -translate-x-1/2 glass-panel px-5 py-2 rounded-full text-[10px] sm:text-xs font-semibold text-slate-300 pointer-events-none transition-opacity duration-700 shadow-xl whitespace-nowrap">
+            Tap 1x: Select • Tap 2x: Pull
+        </div>
+    </div>
+
+    <!-- 4. GAME OVER SCREEN -->
+    <div id="screen-gameover" class="screen-ui hidden-screen">
+        <div class="glass-panel p-6 sm:p-10 rounded-[2rem] text-center max-w-sm w-[92%]">
+            <h1 id="gameover-title" class="text-3xl sm:text-4xl font-extrabold mb-2 text-rose-500">TOWER FELL!</h1>
+            <p class="text-[11px] sm:text-sm text-slate-400 mb-6 font-medium">Game Over</p>
+            
+            <div class="bento-box p-5 sm:p-6 mb-6">
+                <h3 class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Final Score</h3>
+                <p id="final-score" class="text-5xl sm:text-6xl font-extrabold text-emerald-400 mb-2">0</p>
+                <div class="flex justify-center gap-3 sm:gap-4 text-[10px] sm:text-xs font-medium text-slate-500 mt-4 pt-4 border-t border-slate-700">
+                    <span id="final-time">⏱️ 00:00</span>
+                    <span id="final-env">🌬️ 0 | 🫨 0</span>
+                </div>
+            </div>
+
+            <div class="space-y-3">
+                <button onclick="shareScore()" class="w-full py-3 sm:py-4 rounded-2xl font-bold text-[11px] sm:text-sm bg-slate-800 hover:bg-slate-700 border border-slate-600 transition-all text-blue-400">
+                    📤 SHARE SCORE
+                </button>
+                <button onclick="resetToSettings()" class="btn-gradient w-full py-3 sm:py-4 rounded-2xl font-bold text-[11px] sm:text-sm">
+                    🔄 PLAY AGAIN
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3D Canvas -->
+    <div id="game-container" class="absolute inset-0 z-0"></div>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import * as CANNON from 'cannon-es';
+
+        const timeStep = 1 / 60; 
+        let scene, camera, renderer, world, controls;
+        let blocks = [];
+        let selectedMesh = null;
+        
+        let gameState = 'MENU'; 
+        let score = 0;
+        let initialLayers = 18;
+        let placedBlocksCount = 0; 
+        
+        let startTime = 0;
+        let elapsedSeconds = 0;
+        let timerInterval;
+        
+        const blockW = 1.2;
+        const blockH = 0.6;
+        const blockD = 3.6;
+        const mass = 0.5;
+        const originalColor = 0xa37e58; 
+        const selectedColor = 0xff4444; 
+        const animatingColor = 0x34d399; 
+
+        let animData = {
+            active: false,
+            mesh: null,
+            phase: 0,
+            progress: 0,
+            startPos: new THREE.Vector3(),
+            targetPos: new THREE.Vector3(),
+            isRotated: false,
+            originalBody: null
+        };
+
+        document.getElementById('wind').addEventListener('input', e => document.getElementById('windVal').innerText = e.target.value);
+        document.getElementById('shake').addEventListener('input', e => document.getElementById('shakeVal').innerText = e.target.value);
+
+        window.switchScreen = function(screenId) {
+            document.querySelectorAll('.screen-ui').forEach(el => el.classList.replace('active-screen', 'hidden-screen'));
+            document.getElementById(screenId).classList.replace('hidden-screen', 'active-screen');
+        };
+
+        window.startGame = function() {
+            switchScreen('screen-game');
+            resetTower();
+            gameState = 'PLAYING';
+            score = 0;
+            placedBlocksCount = 0;
+            updateScoreUI();
+            
+            // Hentikan putaran otomatis kamera
+            controls.autoRotate = false;
+            
+            elapsedSeconds = 0;
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                if(gameState === 'PLAYING' || gameState === 'ANIMATING') {
+                    elapsedSeconds++;
+                    const m = Math.floor(elapsedSeconds / 60).toString().padStart(2, '0');
+                    const s = (elapsedSeconds % 60).toString().padStart(2, '0');
+                    document.getElementById('time-display').innerText = `${m}:${s}`;
+                }
+            }, 1000);
+            
+            document.getElementById('instruction').style.opacity = '1';
+            setTimeout(() => { document.getElementById('instruction').style.opacity = '0'; }, 4000);
+        };
+
+        window.triggerGameOver = function(manual = false) {
+            if(gameState === 'GAMEOVER') return;
+            gameState = 'GAMEOVER';
+            clearInterval(timerInterval);
+            
+            // Aktifkan kembali putaran kamera perlahan untuk efek dramatis
+            controls.autoRotate = true;
+            controls.autoRotateSpeed = 0.5;
+            
+            document.getElementById('gameover-title').innerText = manual ? 'GAME ENDED' : 'TOWER FELL!';
+            document.getElementById('gameover-title').className = manual ? 'text-3xl sm:text-4xl font-extrabold mb-2 text-slate-300' : 'text-3xl sm:text-4xl font-extrabold mb-2 text-rose-500';
+            
+            document.getElementById('final-score').innerText = score;
+            
+            const m = Math.floor(elapsedSeconds / 60).toString().padStart(2, '0');
+            const s = (elapsedSeconds % 60).toString().padStart(2, '0');
+            document.getElementById('final-time').innerText = `⏱️ ${m}:${s}`;
+            
+            const wind = document.getElementById('wind').value;
+            const shake = document.getElementById('shake').value;
+            document.getElementById('final-env').innerText = `🌬️ ${wind} | 🫨 ${shake}`;
+
+            switchScreen('screen-gameover');
+        };
+
+        window.resetToSettings = function() {
+            switchScreen('screen-settings');
+        };
+
+        window.shareScore = function() {
+            const wind = document.getElementById('wind').value;
+            const shake = document.getElementById('shake').value;
+            const m = Math.floor(elapsedSeconds / 60);
+            const s = elapsedSeconds % 60;
+            
+            const text = `🏆 Skor Jenga 3D: ${score}\n⏱️ Waktu: ${m}m ${s}s\n🌬️ Angin: ${wind} | 🫨 Getaran: ${shake}\n\nMainkan Jenga 3D Pro by JASONPW:\n🔗 https://play.jasonpw.web.id/jenga/`;
+            
+            if (navigator.share) {
+                navigator.share({ title: 'Skor Jenga 3D Pro - JASONPW', text: text }).catch(console.error);
+            } else {
+                alert("Copy teks ini untuk pamer skor:\n\n" + text);
+            }
+        };
+
+        init();
+        animate();
+
+        function init() {
+            const container = document.getElementById('game-container');
+            
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x111827); 
+
+            camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+            camera.position.set(16, 22, 16);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            container.appendChild(renderer.domElement);
+
+            controls = new OrbitControls(camera, renderer.domElement);
+            controls.enablePan = false;
+            controls.enableDamping = true; 
+            controls.dampingFactor = 0.05;
+            controls.maxPolarAngle = Math.PI / 2 - 0.05;
+            controls.target.set(0, 6, 0);
+            
+            // Auto Rotate aktif untuk Start Menu
+            controls.autoRotate = true;
+            controls.autoRotateSpeed = 1.0;
+
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+            scene.add(ambientLight);
+            
+            const dirLight = new THREE.DirectionalLight(0xfff5e6, 1.2);
+            dirLight.position.set(15, 25, 10);
+            dirLight.castShadow = true;
+            dirLight.shadow.mapSize.width = 2048;
+            dirLight.shadow.mapSize.height = 2048;
+            scene.add(dirLight);
+
+            const fillLight = new THREE.DirectionalLight(0x4f46e5, 0.4); 
+            fillLight.position.set(-15, 10, -15);
+            scene.add(fillLight);
+
+            initPhysics();
+            createFloor();
+            buildTower(initialLayers); // Build immediately for the menu background
+            setupInteraction();
+
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        }
+
+        function initPhysics() {
+            world = new CANNON.World();
+            world.gravity.set(0, -9.82, 0); 
+            world.broadphase = new CANNON.SAPBroadphase(world);
+            world.solver.iterations = 50; 
+            
+            const mat = new CANNON.Material('wood');
+            const contactMat = new CANNON.ContactMaterial(mat, mat, { friction: 0.6, restitution: 0.0 });
+            world.addContactMaterial(contactMat);
+            world.defaultContactMaterial = contactMat;
+        }
+
+        function createFloor() {
+            const floorGeo = new THREE.PlaneGeometry(100, 100);
+            const floorMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.5 });
+            const floorMesh = new THREE.Mesh(floorGeo, floorMat);
+            floorMesh.rotation.x = -Math.PI / 2;
+            floorMesh.receiveShadow = true;
+            scene.add(floorMesh);
+
+            const floorBody = new CANNON.Body({ mass: 0, shape: new CANNON.Plane() });
+            floorBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
+            world.addBody(floorBody);
+        }
+
+        function buildTower(layers) {
+            const geometry = new THREE.BoxGeometry(blockW, blockH, blockD);
+            const shape = new CANNON.Box(new CANNON.Vec3(blockW / 2, blockH / 2, blockD / 2));
+
+            for (let i = 0; i < layers; i++) {
+                let y = (blockH / 2) + (i * blockH);
+                let isRotated = i % 2 !== 0; 
+
+                for (let j = -1; j <= 1; j++) {
+                    let x = isRotated ? 0 : j * (blockW + 0.02);
+                    let z = isRotated ? j * (blockW + 0.02) : 0;
+
+                    const material = new THREE.MeshStandardMaterial({ 
+                        color: originalColor, 
+                        roughness: 0.9,
+                        metalness: 0.1
+                    });
+                    const mesh = new THREE.Mesh(geometry, material);
+                    mesh.castShadow = true;
+                    mesh.receiveShadow = true;
+                    scene.add(mesh);
+
+                    const body = new CANNON.Body({ mass: mass, shape: shape });
+                    body.position.set(x, y, z);
+                    if (isRotated) body.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), Math.PI / 2);
+                    body.sleepSpeedLimit = 0.1;
+                    
+                    world.addBody(body);
+                    mesh.userData = { physicsBody: body, isBlock: true, layer: i, isRotated: isRotated };
+                    blocks.push({ mesh, body });
+                }
+            }
+        }
+
+        function resetTower() {
+            blocks.forEach(b => { scene.remove(b.mesh); world.removeBody(b.body); });
+            blocks = [];
+            selectedMesh = null;
+            animData.active = false;
+            buildTower(initialLayers);
+        }
+
+        function setupInteraction() {
+            const raycaster = new THREE.Raycaster();
+            const mouse = new THREE.Vector2();
+            let dragStart = { x: 0, y: 0 };
+
+            window.addEventListener('pointerdown', (e) => {
+                if (gameState !== 'PLAYING' || animData.active) return;
+                dragStart = { x: e.clientX, y: e.clientY };
+            });
+
+            window.addEventListener('pointerup', (e) => {
+                if (gameState !== 'PLAYING' || animData.active) return;
+                if (Math.hypot(e.clientX - dragStart.x, e.clientY - dragStart.y) > 5) return; 
+
+                mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+                mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
+                raycaster.setFromCamera(mouse, camera);
+                const intersects = raycaster.intersectObjects(blocks.map(b => b.mesh));
+
+                if (intersects.length > 0) {
+                    const clickedMesh = intersects[0].object;
+                    
+                    const currentTopLayer = initialLayers - 1 + Math.floor(placedBlocksCount / 3);
+                    if (clickedMesh.userData.layer >= currentTopLayer - 1) return; 
+
+                    if (selectedMesh === clickedMesh) {
+                        startExtractionAnimation(clickedMesh);
+                        selectedMesh = null;
+                    } else {
+                        if (selectedMesh) selectedMesh.material.color.setHex(originalColor);
+                        selectedMesh = clickedMesh;
+                        selectedMesh.material.color.setHex(selectedColor);
+                    }
+                } else {
+                    if (selectedMesh) {
+                        selectedMesh.material.color.setHex(originalColor);
+                        selectedMesh = null;
+                    }
+                }
+            });
+        }
+
+        function startExtractionAnimation(mesh) {
+            gameState = 'ANIMATING';
+            animData.active = true;
+            animData.mesh = mesh;
+            animData.phase = 0;
+            animData.progress = 0;
+            animData.originalBody = mesh.userData.physicsBody;
+            animData.isRotated = mesh.userData.isRotated;
+
+            world.removeBody(animData.originalBody);
+            blocks = blocks.filter(b => b.mesh !== mesh);
+            
+            mesh.material.color.setHex(animatingColor);
+
+            animData.startPos.copy(mesh.position);
+            animData.targetPos.copy(mesh.position);
+            
+            if (animData.isRotated) {
+                animData.targetPos.x += 6; 
+            } else {
+                animData.targetPos.z += 6;
+            }
+
+            applyShakeDifficulty();
+        }
+
+        function applyShakeDifficulty() {
+            const shake = parseFloat(document.getElementById('shake').value) * 0.2; 
+            if (shake > 0) {
+                blocks.forEach(b => {
+                    if (Math.random() > 0.5) {
+                        b.body.wakeUp();
+                        b.body.applyImpulse(
+                            new CANNON.Vec3((Math.random()-0.5)*shake, 0, (Math.random()-0.5)*shake),
+                            b.body.position
+                        );
+                    }
+                });
+            }
+        }
+
+        function getTopPlacementTransform() {
+            let layerIndex = initialLayers + Math.floor(placedBlocksCount / 3);
+            let indexInLayer = placedBlocksCount % 3; 
+            
+            let j = indexInLayer === 0 ? 0 : (indexInLayer === 1 ? -1 : 1);
+            let y = (blockH / 2) + (layerIndex * blockH);
+            let isRotated = layerIndex % 2 !== 0;
+            
+            let x = isRotated ? 0 : j * (blockW + 0.02);
+            let z = isRotated ? j * (blockW + 0.02) : 0;
+            let rot = isRotated ? Math.PI / 2 : 0;
+
+            return { x, y, z, rot, isRotated, layerIndex };
+        }
+
+        function updateScoreUI() {
+            document.getElementById('score-display').innerText = score;
+        }
+
+        function lerp(start, end, t) {
+            return start * (1 - t) + end * t;
+        }
+
+        function handleAnimation() {
+            if (!animData.active) return;
+            
+            animData.progress += 0.025; 
+            let t = Math.min(animData.progress, 1);
+            let ease = 1 - Math.pow(1 - t, 3);
+
+            animData.mesh.position.x = lerp(animData.startPos.x, animData.targetPos.x, ease);
+            animData.mesh.position.y = lerp(animData.startPos.y, animData.targetPos.y, ease);
+            animData.mesh.position.z = lerp(animData.startPos.z, animData.targetPos.z, ease);
+
+            if (t >= 1) {
+                animData.progress = 0;
+                
+                if (animData.phase === 0) {
+                    animData.phase = 1;
+                    animData.startPos.copy(animData.mesh.position);
+                    const topTransform = getTopPlacementTransform();
+                    animData.targetPos.set(animData.startPos.x, topTransform.y + 3, animData.startPos.z);
+                } 
+                else if (animData.phase === 1) {
+                    animData.phase = 2;
+                    animData.startPos.copy(animData.mesh.position);
+                    const topTransform = getTopPlacementTransform();
+                    animData.targetPos.set(topTransform.x, topTransform.y, topTransform.z);
+                    animData.mesh.rotation.y = topTransform.rot;
+                } 
+                else if (animData.phase === 2) {
+                    const topTransform = getTopPlacementTransform();
+                    const shape = new CANNON.Box(new CANNON.Vec3(blockW/2, blockH/2, blockD/2));
+                    const newBody = new CANNON.Body({ mass: mass, shape: shape });
+                    newBody.position.set(topTransform.x, topTransform.y, topTransform.z);
+                    if (topTransform.isRotated) {
+                        newBody.quaternion.setFromAxisAngle(new CANNON.Vec3(0,1,0), Math.PI/2);
+                    }
+                    
+                    world.addBody(newBody);
+                    animData.mesh.material.color.setHex(originalColor);
+                    animData.mesh.userData = { physicsBody: newBody, isBlock: true, layer: topTransform.layerIndex, isRotated: topTransform.isRotated };
+                    blocks.push({ mesh: animData.mesh, body: newBody });
+
+                    score++;
+                    placedBlocksCount++;
+                    updateScoreUI();
+                    
+                    animData.active = false;
+                    animData.mesh = null;
+                    
+                    if(gameState === 'ANIMATING') gameState = 'PLAYING';
+                }
+            }
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (world) {
+                // Selalu jalankan fisika agar menara stabil saat di menu
+                world.step(timeStep);
+                
+                if (gameState === 'PLAYING' || gameState === 'ANIMATING') {
+                    const windForce = parseFloat(document.getElementById('wind').value) * 0.1;
+                    if (windForce > 0) {
+                        blocks.forEach(b => {
+                            b.body.wakeUp();
+                            b.body.applyForce(new CANNON.Vec3(windForce, 0, 0), b.body.position);
+                        });
+                    }
+
+                    let towerCollapsed = false;
+                    let highestY = 0;
+
+                    blocks.forEach(b => {
+                        if (b.body.position.y > highestY) highestY = b.body.position.y;
+                        if (b.body.position.y < 0.2 || Math.abs(b.body.position.x) > 4 || Math.abs(b.body.position.z) > 4) {
+                            towerCollapsed = true;
+                        }
+                    });
+                    
+                    let currentTowerLayers = initialLayers + Math.floor(placedBlocksCount / 3);
+                    let expectedHeight = currentTowerLayers * blockH;
+                    
+                    if (expectedHeight - highestY > blockH * 2.5) {
+                        towerCollapsed = true;
+                    }
+
+                    if (towerCollapsed && gameState !== 'GAMEOVER') {
+                        triggerGameOver(false);
+                    }
+                    
+                    handleAnimation();
+                }
+
+                // Sinkronisasi posisi mesh dengan body physics
+                blocks.forEach(b => {
+                    b.mesh.position.copy(b.body.position);
+                    b.mesh.quaternion.copy(b.body.quaternion);
+                });
+            }
+
+            if (controls) controls.update(); // Update fungsi perputaran otomatis jika aktif
+            if (renderer && scene && camera) renderer.render(scene, camera);
+        }
+    </script>
+</body>
+</html>
