@@ -1,0 +1,846 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+
+    <!-- ======================= -->
+    <!-- SEO & META TAGS LENGKAP -->
+    <!-- ======================= -->
+    <title>JPW Piano Dash - Play Highscore Tiles by YCYL STUDIO</title>
+    <meta
+      name="description"
+      content="Mainkan JPW Piano Dash, game ritme piano tanpa henti buatan JASONPW dari YCYL STUDIO. Kejar skor tertinggi, temukan balok emas, dan uji kecepatan jarimu!"
+    />
+    <meta
+      name="keywords"
+      content="JPW Piano Dash, JASONPW, YCYL STUDIO, Piano Tiles, HTML5 game, rhythm game, web game"
+    />
+    <meta name="author" content="JASONPW" />
+    <meta name="publisher" content="YCYL STUDIO" />
+    <meta name="robots" content="index, follow" />
+
+    <!-- Open Graph / Facebook / WhatsApp -->
+    <meta property="og:type" content="video.game" />
+    <meta
+      property="og:title"
+      content="JPW Piano Dash - Game Ritme Kecepatan!"
+    />
+    <meta
+      property="og:description"
+      content="Cetak skor tertinggi di JPW Piano Dash. Game arcade piano buatan YCYL STUDIO. Mainkan gratis sekarang!"
+    />
+    <meta property="og:site_name" content="JPW Piano Dash" />
+    <!-- Logo Custom (3 Garis) SVG Base64 -->
+    <meta
+      property="og:image"
+      content="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='100' fill='%230f172a'/%3E%3Crect x='150' y='156' width='60' height='200' rx='10' fill='%23ffffff'/%3E%3Crect x='226' y='106' width='60' height='300' rx='10' fill='%2334d399'/%3E%3Crect x='302' y='156' width='60' height='200' rx='10' fill='%23ffffff'/%3E%3C/svg%3E"
+    />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="JPW Piano Dash - Game Ritme Kecepatan!"
+    />
+    <meta
+      name="twitter:description"
+      content="Lagi bosan? Coba tes kecepatan jari kamu di JPW Piano Dash! Mainkan sekarang!"
+    />
+    <meta
+      name="twitter:image"
+      content="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='100' fill='%230f172a'/%3E%3Crect x='150' y='156' width='60' height='200' rx='10' fill='%23ffffff'/%3E%3Crect x='226' y='106' width='60' height='300' rx='10' fill='%2334d399'/%3E%3Crect x='302' y='156' width='60' height='200' rx='10' fill='%23ffffff'/%3E%3C/svg%3E"
+    />
+
+    <!-- Favicon Eksternal -->
+    <link
+      rel="icon"
+      type="image/x-icon"
+      href="https://jasonpw.web.id/favicon.ico"
+    />
+
+    <!-- Schema.org JSON-LD -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "VideoGame",
+        "name": "JPW Piano Dash",
+        "description": "Game ritme arcade piano tanpa henti.",
+        "author": {
+          "@type": "Person",
+          "name": "JASONPW",
+          "url": "https://jasonpw.web.id/"
+        },
+        "creator": {
+          "@type": "Organization",
+          "name": "YCYL STUDIO",
+          "url": "https://ycylstudio.web.id/"
+        },
+        "genre": "Rhythm Arcade",
+        "playMode": "SinglePlayer",
+        "operatingSystem": "Web Browser"
+      }
+    </script>
+    <!-- ======================= -->
+
+    <!-- Google Fonts & FontAwesome -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;900&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+      body {
+        font-family: "Poppins", sans-serif;
+        background: #020617;
+        touch-action: none;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .bg-animated-gradient {
+        background: linear-gradient(-45deg, #0f172a, #1e293b, #0f3460, #16213e);
+        background-size: 400% 400%;
+        animation: gradientBG 10s ease infinite;
+      }
+      @keyframes gradientBG {
+        0% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+        100% {
+          background-position: 0% 50%;
+        }
+      }
+      .glass-panel {
+        background: rgba(15, 23, 42, 0.75);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .animate-shake {
+        animation: shake 0.35s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+      }
+      @keyframes shake {
+        10%,
+        90% {
+          transform: translate3d(-3px, 0, 0);
+        }
+        20%,
+        80% {
+          transform: translate3d(5px, 0, 0);
+        }
+        30%,
+        50%,
+        70% {
+          transform: translate3d(-7px, 0, 0);
+        }
+        40%,
+        60% {
+          transform: translate3d(7px, 0, 0);
+        }
+      }
+      .float-score {
+        position: absolute;
+        top: 40%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: #fbbf24;
+        font-weight: 900;
+        font-size: 2.2rem;
+        pointer-events: none;
+        text-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+        animation: floatUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        z-index: 50;
+      }
+      @keyframes floatUp {
+        0% {
+          opacity: 1;
+          transform: translate(-50%, 0) scale(0.8);
+        }
+        80% {
+          opacity: 0.8;
+        }
+        100% {
+          opacity: 0;
+          transform: translate(-50%, -70px) scale(1.4);
+        }
+      }
+      .piano-tile {
+        background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+        box-shadow:
+          inset 0 0 15px rgba(0, 0, 0, 0.8),
+          inset 0 2px 0 rgba(255, 255, 255, 0.1);
+      }
+    </style>
+  </head>
+  <body
+    class="flex justify-center items-center h-[100dvh] w-full overflow-hidden text-slate-100"
+  >
+    <div
+      id="game-container"
+      class="relative w-full min-w-[300px] lg:max-w-[450px] h-full bg-[#f8fafc] lg:shadow-[0_0_60px_rgba(0,0,0,0.9)] lg:border-x lg:border-slate-800 overflow-hidden"
+    >
+      <!-- HUD: Skor & Tombol Pause -->
+      <div
+        id="hud"
+        class="absolute top-8 left-0 w-full flex justify-between items-start px-6 z-20 hidden pointer-events-none"
+      >
+        <div
+          class="text-7xl font-black text-rose-500 drop-shadow-[0_4px_10px_rgba(255,255,255,1)]"
+          id="score-display"
+        >
+          0
+        </div>
+        <button
+          onclick="pauseGame()"
+          class="pointer-events-auto w-12 h-12 bg-slate-900/40 backdrop-blur-md border border-slate-600 rounded-xl text-white text-xl flex items-center justify-center hover:bg-slate-700 active:scale-90 transition-all shadow-lg"
+        >
+          <i class="fa-solid fa-pause"></i>
+        </button>
+      </div>
+
+      <!-- Papan Permainan -->
+      <div
+        id="board"
+        class="absolute inset-0 w-full h-full pointer-events-none"
+      ></div>
+
+      <!-- Garis Pembatas -->
+      <div class="absolute inset-0 pointer-events-none flex z-10">
+        <div class="flex-1 border-r-2 border-slate-200"></div>
+        <div class="flex-1 border-r-2 border-slate-200"></div>
+        <div class="flex-1 border-r-2 border-slate-200"></div>
+        <div class="flex-1"></div>
+      </div>
+
+      <!-- === LAYAR MENU UTAMA === -->
+      <div
+        id="start-screen"
+        class="absolute inset-0 bg-animated-gradient z-30 flex flex-col justify-center items-center p-6 text-center transition-opacity"
+      >
+        <!-- Logo Grafis -->
+        <div class="flex items-end justify-center gap-1.5 h-16 mb-4">
+          <div class="w-4 h-8 bg-white rounded-t-sm shadow-md"></div>
+          <div
+            class="w-4 h-16 bg-emerald-400 rounded-t-sm shadow-md shadow-emerald-400/50"
+          ></div>
+          <div class="w-4 h-8 bg-white rounded-t-sm shadow-md"></div>
+        </div>
+
+        <h1
+          class="text-4xl font-black text-white drop-shadow-md mb-1 leading-tight tracking-tight"
+        >
+          JPW DASH
+        </h1>
+        <p
+          class="text-emerald-400 text-xs font-bold tracking-widest uppercase mb-8"
+        >
+          By YCYL Studio
+        </p>
+
+        <div class="w-full max-w-[280px] flex flex-col gap-3">
+          <button
+            onclick="prepareGame('mudah')"
+            class="py-3 rounded-xl text-lg font-black text-slate-900 bg-emerald-400 hover:bg-emerald-300 active:scale-95 transition-all shadow-[0_4px_0_#059669]"
+          >
+            MUDAH
+          </button>
+          <button
+            onclick="prepareGame('sedang')"
+            class="py-3 rounded-xl text-lg font-black text-slate-900 bg-amber-400 hover:bg-amber-300 active:scale-95 transition-all shadow-[0_4px_0_#d97706]"
+          >
+            SEDANG
+          </button>
+          <button
+            onclick="prepareGame('sulit')"
+            class="py-3 rounded-xl text-lg font-black text-white bg-rose-500 hover:bg-rose-400 active:scale-95 transition-all shadow-[0_4px_0_#be123c] mb-2"
+          >
+            SULIT
+          </button>
+
+          <div class="flex gap-3">
+            <button
+              onclick="showHowToPlay()"
+              class="flex-1 py-2 rounded-xl text-xs font-bold text-white bg-slate-700 hover:bg-slate-600 active:scale-95 transition-all shadow-[0_3px_0_#334155]"
+            >
+              <i class="fa-solid fa-book-open mr-1"></i> Cara Main
+            </button>
+            <button
+              onclick="showInfo()"
+              class="flex-1 py-2 rounded-xl text-xs font-bold text-white bg-slate-700 hover:bg-slate-600 active:scale-95 transition-all shadow-[0_3px_0_#334155]"
+            >
+              <i class="fa-solid fa-circle-info mr-1"></i> Info / Kredit
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- === LAYAR HITUNG MUNDUR === -->
+      <div
+        id="countdown-screen"
+        class="absolute inset-0 bg-slate-900/80 backdrop-blur-md z-40 flex flex-col justify-center items-center p-6 text-center hidden"
+      >
+        <div
+          class="glass-panel p-10 rounded-full flex flex-col items-center justify-center w-48 h-48 shadow-2xl"
+        >
+          <div
+            id="countdown-text"
+            class="text-7xl font-black text-emerald-400 drop-shadow-[0_0_20px_rgba(52,211,153,0.8)]"
+          >
+            3
+          </div>
+        </div>
+      </div>
+
+      <!-- === LAYAR PAUSE === -->
+      <div
+        id="pause-screen"
+        class="absolute inset-0 bg-slate-900/80 backdrop-blur-md z-50 flex flex-col justify-center items-center p-6 text-center hidden"
+      >
+        <h2
+          class="text-3xl font-black text-white mb-8 tracking-widest uppercase"
+        >
+          DIJEDA
+        </h2>
+        <div class="w-full max-w-[280px] flex flex-col gap-3">
+          <button
+            onclick="resumeGame()"
+            class="py-4 rounded-xl text-lg font-black text-slate-900 bg-emerald-400 hover:bg-emerald-300 active:scale-95 transition-all shadow-[0_4px_0_#059669]"
+          >
+            <i class="fa-solid fa-play mr-2"></i> LANJUTKAN
+          </button>
+          <button
+            onclick="showHowToPlay()"
+            class="py-3 rounded-xl text-md font-bold text-white bg-slate-700 hover:bg-slate-600 active:scale-95 transition-all shadow-[0_3px_0_#334155]"
+          >
+            <i class="fa-solid fa-book-open mr-2"></i> Cara Bermain
+          </button>
+          <button
+            onclick="quitGame()"
+            class="py-3 rounded-xl text-md font-bold text-white bg-rose-500 hover:bg-rose-400 active:scale-95 transition-all shadow-[0_3px_0_#be123c] mt-2"
+          >
+            <i class="fa-solid fa-door-open mr-2"></i> KELUAR KE MENU
+          </button>
+        </div>
+      </div>
+
+      <!-- === MODAL: CARA BERMAIN === -->
+      <div
+        id="howto-screen"
+        class="absolute inset-0 bg-slate-900/90 backdrop-blur-md z-50 flex flex-col justify-center items-center p-6 text-center hidden"
+      >
+        <div class="glass-panel p-6 rounded-2xl w-full max-w-[320px] text-left">
+          <div
+            class="flex justify-between items-center mb-4 border-b border-slate-600 pb-2"
+          >
+            <h2 class="text-xl font-bold text-emerald-400">
+              <i class="fa-solid fa-book-open mr-2"></i>Cara Main
+            </h2>
+            <button
+              onclick="closeModals()"
+              class="text-slate-400 hover:text-white"
+            >
+              <i class="fa-solid fa-xmark text-2xl"></i>
+            </button>
+          </div>
+          <ul class="text-sm text-slate-300 space-y-3">
+            <li>
+              <i class="fa-solid fa-hand-pointer text-emerald-400 w-5"></i>
+              Tekan kotak hitam yang berjalan turun.
+            </li>
+            <li>
+              <i class="fa-solid fa-xmark text-rose-500 w-5"></i>
+              <b>Jangan</b> sentuh area putih!
+            </li>
+            <li>
+              <i class="fa-solid fa-star text-yellow-400 w-5"></i> Tekan Balok
+              Emas (setelah skor 50) untuk poin ekstra +2 hingga +5.
+            </li>
+            <li>
+              <i class="fa-solid fa-bolt text-blue-400 w-5"></i> Kecepatan akan
+              terus bertambah seiring waktu.
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- === MODAL: INFO / KREDIT === -->
+      <div
+        id="info-screen"
+        class="absolute inset-0 bg-slate-900/90 backdrop-blur-md z-50 flex flex-col justify-center items-center p-6 text-center hidden"
+      >
+        <div
+          class="glass-panel p-6 rounded-2xl w-full max-w-[320px] text-center"
+        >
+          <div
+            class="flex justify-between items-center mb-6 border-b border-slate-600 pb-2"
+          >
+            <h2 class="text-xl font-bold text-emerald-400">
+              <i class="fa-solid fa-circle-info mr-2"></i>Info Game
+            </h2>
+            <button
+              onclick="closeModals()"
+              class="text-slate-400 hover:text-white"
+            >
+              <i class="fa-solid fa-xmark text-2xl"></i>
+            </button>
+          </div>
+          <div class="flex items-end justify-center gap-1.5 h-10 mb-4">
+            <div class="w-3 h-5 bg-white rounded-t-sm shadow-md"></div>
+            <div class="w-3 h-10 bg-emerald-400 rounded-t-sm shadow-md"></div>
+            <div class="w-3 h-5 bg-white rounded-t-sm shadow-md"></div>
+          </div>
+          <h3 class="text-2xl font-black text-white mb-1">JPW DASH</h3>
+          <p class="text-xs text-slate-400 mb-6">Versi 1.0.0</p>
+
+          <div class="text-sm text-slate-300 mb-4 space-y-1">
+            <p>Dibuat oleh:</p>
+            <a
+              href="https://jasonpw.web.id/"
+              target="_blank"
+              class="block font-bold text-emerald-400 hover:text-emerald-300"
+              >JASONPW</a
+            >
+          </div>
+          <div class="text-sm text-slate-300">
+            <p>Studio Pengembang:</p>
+            <a
+              href="https://ycylstudio.web.id/"
+              target="_blank"
+              class="block font-bold text-emerald-400 hover:text-emerald-300"
+              >YCYL STUDIO</a
+            >
+          </div>
+        </div>
+      </div>
+
+      <!-- === LAYAR HASIL === -->
+      <div
+        id="result-screen"
+        class="absolute inset-0 bg-animated-gradient z-30 flex flex-col justify-center items-center p-6 text-center hidden"
+      >
+        <div
+          class="glass-panel rounded-3xl p-6 w-full max-w-[340px] mb-6 shadow-2xl relative overflow-hidden"
+        >
+          <i
+            class="fa-solid fa-trophy absolute -right-6 -top-6 text-8xl text-white/5 rotate-12 pointer-events-none"
+          ></i>
+          <h2
+            class="text-xl font-bold text-slate-300 mb-6 uppercase tracking-widest text-center border-b border-slate-600/50 pb-3"
+          >
+            Statistik Permainan
+          </h2>
+
+          <div class="grid grid-cols-2 gap-y-6 gap-x-4 text-left">
+            <div class="col-span-2 text-center pb-2">
+              <p
+                class="text-emerald-400 text-sm font-bold uppercase tracking-wider mb-1"
+              >
+                Skor Akhir
+              </p>
+              <div
+                class="text-7xl font-black text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.3)] leading-none"
+                id="final-score"
+              >
+                0
+              </div>
+            </div>
+            <div
+              class="bg-slate-900/50 p-3 rounded-xl border border-slate-700/50"
+            >
+              <p class="text-slate-400 text-xs uppercase mb-1">Mode</p>
+              <p class="text-white font-bold text-lg" id="res-mode">Mudah</p>
+            </div>
+            <div
+              class="bg-slate-900/50 p-3 rounded-xl border border-slate-700/50"
+            >
+              <p class="text-slate-400 text-xs uppercase mb-1">Waktu</p>
+              <p class="text-white font-bold text-lg">
+                <span id="res-time">0</span>s
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex flex-col w-full max-w-[340px] gap-3">
+          <button
+            onclick="shareResult()"
+            class="w-full py-4 rounded-xl text-md font-black text-slate-900 bg-emerald-400 hover:bg-emerald-300 transition-all active:scale-95 shadow-[0_4px_0_#059669]"
+          >
+            <i class="fa-solid fa-share-nodes mr-2"></i> BAGIKAN SKOR
+          </button>
+          <button
+            onclick="showMenu()"
+            class="w-full py-4 rounded-xl text-md font-black text-white bg-slate-700 hover:bg-slate-600 transition-all active:scale-95 border border-slate-500 shadow-[0_4px_0_#334155]"
+          >
+            <i class="fa-solid fa-house mr-2"></i> MENU UTAMA
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      /**
+       * =========================================
+       * JPW PIANO DASH ENGINE
+       * Author: JASONPW
+       * Studio: YCYL STUDIO (https://ycylstudio.web.id/)
+       * Personal Site: https://jasonpw.web.id/
+       * =========================================
+       */
+
+      const ROW_HEIGHT = 160;
+      let gameHeight = 0;
+      let totalRows = 0;
+
+      const SPEED_SETTINGS = {
+        mudah: { min: 2.8, max: 7.5, acc: 0.0015 },
+        sedang: { min: 4.5, max: 11.0, acc: 0.0025 },
+        sulit: { min: 6.5, max: 16.0, acc: 0.0035 },
+      };
+
+      let currentConfig = null;
+      let currentSpeed = 0;
+      let score = 0;
+      let isPlaying = false;
+      let isPaused = false;
+      let animationId = null;
+      let currentMode = "";
+      let rowData = [];
+
+      // Sistem Pelacakan Waktu
+      let startTime = 0;
+      let pauseStartTime = 0;
+      let totalPauseTime = 0;
+
+      // DOM Element
+      const container = document.getElementById("game-container");
+      const board = document.getElementById("board");
+      const hud = document.getElementById("hud");
+      const startScreen = document.getElementById("start-screen");
+      const countdownScreen = document.getElementById("countdown-screen");
+      const countdownText = document.getElementById("countdown-text");
+      const resultScreen = document.getElementById("result-screen");
+      const pauseScreen = document.getElementById("pause-screen");
+      const howtoScreen = document.getElementById("howto-screen");
+      const infoScreen = document.getElementById("info-screen");
+      const scoreDisplay = document.getElementById("score-display");
+      const finalScoreDisplay = document.getElementById("final-score");
+
+      const resMode = document.getElementById("res-mode");
+      const resTime = document.getElementById("res-time");
+
+      // Modals & Menu
+      function showMenu() {
+        resultScreen.classList.add("hidden");
+        pauseScreen.classList.add("hidden");
+        startScreen.classList.remove("hidden");
+        hud.classList.add("hidden");
+        closeModals();
+        board.innerHTML = "";
+      }
+
+      function showHowToPlay() {
+        howtoScreen.classList.remove("hidden");
+      }
+      function showInfo() {
+        infoScreen.classList.remove("hidden");
+      }
+      function closeModals() {
+        howtoScreen.classList.add("hidden");
+        infoScreen.classList.add("hidden");
+      }
+
+      // Persiapan Mulai Game
+      function prepareGame(mode) {
+        currentMode = mode;
+        currentConfig = SPEED_SETTINGS[mode];
+        score = 0;
+        totalPauseTime = 0;
+        isPaused = false;
+        rowData = [];
+
+        startScreen.classList.add("hidden");
+        scoreDisplay.innerText = score;
+
+        initBoard();
+
+        countdownScreen.classList.remove("hidden");
+        let count = 3;
+        countdownText.innerText = count;
+
+        let cdInterval = setInterval(() => {
+          count--;
+          if (count > 0) {
+            countdownText.innerText = count;
+          } else if (count === 0) {
+            countdownText.innerText = "GO!";
+          } else {
+            clearInterval(cdInterval);
+            countdownScreen.classList.add("hidden");
+            hud.classList.remove("hidden");
+
+            isPlaying = true;
+            currentSpeed = currentConfig.min;
+            startTime = Date.now();
+            animationId = requestAnimationFrame(gameLoop);
+          }
+        }, 700);
+      }
+
+      // Fungsi Pause / Jeda
+      function pauseGame() {
+        if (!isPlaying || isPaused) return;
+        isPaused = true;
+        pauseStartTime = Date.now();
+        pauseScreen.classList.remove("hidden");
+        hud.classList.add("hidden");
+      }
+
+      function resumeGame() {
+        if (!isPlaying || !isPaused) return;
+        isPaused = false;
+        totalPauseTime += Date.now() - pauseStartTime;
+        pauseScreen.classList.add("hidden");
+        closeModals();
+        hud.classList.remove("hidden");
+        animationId = requestAnimationFrame(gameLoop);
+      }
+
+      function quitGame() {
+        isPlaying = false;
+        isPaused = false;
+        cancelAnimationFrame(animationId);
+        showMenu();
+      }
+
+      // Papan Permainan
+      function initBoard() {
+        board.innerHTML = "";
+        gameHeight = container.clientHeight;
+        totalRows = Math.ceil(gameHeight / ROW_HEIGHT) + 2;
+        const startY = gameHeight - ROW_HEIGHT;
+
+        for (let i = 0; i < totalRows; i++) {
+          let yPos = startY - ROW_HEIGHT * i;
+          let isStartBuffer = i === 0 || i === 1;
+          let targetCol = isStartBuffer ? -1 : Math.floor(Math.random() * 4);
+          createRow(yPos, targetCol);
+        }
+      }
+
+      function createRow(yPos, tCol) {
+        const rowDiv = document.createElement("div");
+        rowDiv.className = "absolute top-0 w-full flex pointer-events-auto";
+        rowDiv.style.height = ROW_HEIGHT + "px";
+        rowDiv.style.transform = `translateY(${yPos}px)`;
+
+        const tiles = [];
+        for (let j = 0; j < 4; j++) {
+          const tile = document.createElement("div");
+          setupTileStyles(tile, j, tCol, false);
+          tile.addEventListener("pointerdown", (e) => handleTap(e, rowDiv, j));
+          rowDiv.appendChild(tile);
+          tiles.push(tile);
+        }
+
+        board.appendChild(rowDiv);
+        rowData.push({
+          element: rowDiv,
+          tiles: tiles,
+          y: yPos,
+          targetCol: tCol,
+          clicked: false,
+          isBonus: false,
+          bonusPoints: 1,
+        });
+      }
+
+      function setupTileStyles(tile, colIndex, targetCol, isBonus) {
+        tile.className =
+          "flex-1 cursor-pointer border-b border-slate-200/50 relative flex justify-center items-center";
+        tile.innerHTML = "";
+        if (colIndex === targetCol) {
+          if (isBonus) {
+            tile.classList.add(
+              "bg-gradient-to-b",
+              "from-amber-300",
+              "to-yellow-500",
+              "shadow-[inset_0_0_30px_rgba(217,119,6,0.8)]",
+              "border-x",
+              "border-amber-200",
+            );
+            tile.innerHTML =
+              '<i class="fa-solid fa-star text-4xl text-white/90 drop-shadow-md"></i>';
+          } else {
+            tile.classList.add("piano-tile");
+          }
+        } else {
+          tile.classList.add("bg-transparent");
+        }
+      }
+
+      // Interaksi Permainan
+      function handleTap(e, rowElement, colIndex) {
+        e.preventDefault();
+        if (!isPlaying || isPaused) return;
+
+        const clickedRow = rowData.find((r) => r.element === rowElement);
+        if (clickedRow.clicked) return;
+
+        let lowestRow = null;
+        let maxY = -9999;
+        for (let row of rowData) {
+          if (!row.clicked && row.targetCol !== -1 && row.y > maxY) {
+            maxY = row.y;
+            lowestRow = row;
+          }
+        }
+
+        if (clickedRow === lowestRow && colIndex === clickedRow.targetCol) {
+          clickedRow.clicked = true;
+          clickedRow.tiles[colIndex].className =
+            "flex-1 border-b border-slate-200/50 bg-slate-300 flex justify-center items-center shadow-inner";
+          clickedRow.tiles[colIndex].innerHTML = "";
+
+          if (clickedRow.isBonus) {
+            score += clickedRow.bonusPoints;
+            const floatTxt = document.createElement("div");
+            floatTxt.className = "float-score";
+            floatTxt.innerText = `+${clickedRow.bonusPoints}`;
+            clickedRow.tiles[colIndex].appendChild(floatTxt);
+          } else {
+            score++;
+          }
+          scoreDisplay.innerText = score;
+        } else {
+          clickedRow.tiles[colIndex].classList.add(
+            "bg-rose-500",
+            "animate-shake",
+            "shadow-[inset_0_0_30px_rgba(159,18,57,0.8)]",
+          );
+          clickedRow.tiles[colIndex].classList.remove(
+            "bg-transparent",
+            "piano-tile",
+          );
+          clickedRow.tiles[colIndex].innerHTML =
+            '<i class="fa-solid fa-xmark text-5xl text-white drop-shadow-md"></i>';
+          endMatch();
+        }
+      }
+
+      // Engine Loop
+      function gameLoop() {
+        if (!isPlaying || isPaused) return;
+
+        if (currentSpeed < currentConfig.max) {
+          currentSpeed += currentConfig.acc;
+        }
+
+        let minY = Math.min(...rowData.map((r) => r.y));
+
+        for (let i = 0; i < rowData.length; i++) {
+          let row = rowData[i];
+
+          row.y += currentSpeed;
+          row.element.style.transform = `translateY(${row.y}px)`;
+
+          if (row.y >= gameHeight) {
+            if (row.targetCol !== -1 && !row.clicked) {
+              row.tiles[row.targetCol].classList.remove(
+                "piano-tile",
+                "bg-gradient-to-b",
+              );
+              row.tiles[row.targetCol].classList.add(
+                "bg-rose-500",
+                "animate-shake",
+              );
+              row.tiles[row.targetCol].innerHTML =
+                '<i class="fa-solid fa-exclamation text-5xl text-white"></i>';
+              endMatch();
+              return;
+            } else {
+              row.y = minY - ROW_HEIGHT;
+              minY = row.y;
+              row.clicked = false;
+              row.targetCol = Math.floor(Math.random() * 4);
+
+              if (score >= 50 && Math.random() < 0.1) {
+                row.isBonus = true;
+                row.bonusPoints = Math.floor(Math.random() * 4) + 2;
+              } else {
+                row.isBonus = false;
+                row.bonusPoints = 1;
+              }
+
+              for (let j = 0; j < 4; j++) {
+                setupTileStyles(row.tiles[j], j, row.targetCol, row.isBonus);
+              }
+            }
+          }
+        }
+        animationId = requestAnimationFrame(gameLoop);
+      }
+
+      function endMatch() {
+        isPlaying = false;
+        cancelAnimationFrame(animationId);
+
+        const endTime = Date.now();
+        const durationSecs = (
+          (endTime - startTime - totalPauseTime) /
+          1000
+        ).toFixed(1);
+
+        setTimeout(() => {
+          hud.classList.add("hidden");
+          resultScreen.classList.remove("hidden");
+
+          finalScoreDisplay.innerText = score;
+          resMode.innerText =
+            currentMode.charAt(0).toUpperCase() + currentMode.slice(1);
+          resTime.innerText = durationSecs;
+        }, 500);
+      }
+
+      // Teks Share ke Media Sosial Sesuai Request
+      function shareResult() {
+        const modeText = currentMode.toUpperCase();
+        const timeText = resTime.innerText;
+
+        // Template presisi sesuai yang diminta
+        const shareText = `Lagi bosan? Coba tes kecepatan jari kamu di JPW Piano Dash! 🎹💨\nTadi iseng main Mode ${modeText} dan dapet skor ${score} cuma dalam ${timeText} detik! 🔥\nBeneran bikin ketagihan! Coba klik linknya, kira-kira kamu bisa dapet skor berapa? 😎\n🔗 http://localhost/jpw/subdomains/play/game/ (Game seru buatan YCYL STUDIO)`;
+
+        if (navigator.share) {
+          navigator
+            .share({
+              text: shareText,
+            })
+            .catch((error) => console.log("Batal share", error));
+        } else {
+          prompt("Salin teks ini untuk membagikan skor Anda:", shareText);
+        }
+      }
+
+      window.addEventListener("resize", () => {
+        if (
+          !isPlaying &&
+          startScreen.classList.contains("hidden") &&
+          pauseScreen.classList.contains("hidden")
+        ) {
+          showMenu();
+        }
+      });
+    </script>
+  </body>
+</html>
