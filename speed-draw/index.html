@@ -1,0 +1,1371 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Speed Draw - Tantangan Imajinasi Kilat</title>
+
+    <!-- === SEO & META TAGS === -->
+    <meta
+      name="description"
+      content="Speed Draw Challenge - Game tebak dan gambar cepat. Uji seberapa cepat ingatan dan imajinasi kamu bersama teman!"
+    />
+    <meta
+      name="keywords"
+      content="Speed Draw, Drawing Challenge, Game 2 Orang, Co-op Game, YCYL Studio, Jasonpw, Web Game"
+    />
+    <meta name="author" content="JASONPW" />
+    <meta name="publisher" content="YCYL Studio" />
+    <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#0f172a" />
+
+    <!-- === OPEN GRAPH (Facebook, WhatsApp, Discord) === -->
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:title"
+      content="Speed Draw - Tantangan Imajinasi Kilat"
+    />
+    <meta
+      property="og:description"
+      content="Game menggambar 20 kata secara cepat yang diinstruksikan oleh AI. Uji kecepatan tangan dan ingatanmu!"
+    />
+    <meta property="og:url" content="https://jasonpw.web.id/" />
+    <meta property="og:site_name" content="Speed Draw by YCYL Studio" />
+    <!-- Ganti URL image di bawah ini jika kamu memiliki banner/thumbnail game -->
+    <meta property="og:image" content="https://jasonpw.web.id/favicon.ico" />
+
+    <!-- === TWITTER CARDS === -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Speed Draw Challenge" />
+    <meta
+      name="twitter:description"
+      content="Game tebak dan gambar cepat. Mainkan tantangan 20 kata bersama temanmu!"
+    />
+
+    <!-- === SCHEMA.ORG (JSON-LD) === -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "VideoGame",
+        "name": "Speed Draw",
+        "description": "Permainan menggambar 20 kata cepat yang dipandu AI dan menantang memori pemain.",
+        "genre": ["Puzzle", "Drawing", "Party Game"],
+        "playMode": "CoOp",
+        "applicationCategory": "Game",
+        "author": {
+          "@type": "Person",
+          "name": "JASONPW",
+          "url": "https://github.com/JPROJECT-1"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "YCYL Studio"
+        },
+        "operatingSystem": "Any",
+        "browserRequirements": "Requires HTML5 Canvas and Web Speech API support."
+      }
+    </script>
+
+    <!-- === FONTS & LIBRARIES === -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- === TAILWIND CONFIG & CUSTOM CSS === -->
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: { sans: ["Plus Jakarta Sans", "sans-serif"] },
+            animation: {
+              blob: "blob 10s infinite",
+              shake: "shake 0.5s cubic-bezier(.36,.07,.19,.97) both",
+              pop: "pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards",
+            },
+            keyframes: {
+              blob: {
+                "0%, 100%": { transform: "translate(0px, 0px) scale(1)" },
+                "33%": { transform: "translate(30px, -50px) scale(1.1)" },
+                "66%": { transform: "translate(-20px, 20px) scale(0.9)" },
+              },
+              shake: {
+                "10%, 90%": { transform: "translate3d(-1px, 0, 0)" },
+                "20%, 80%": { transform: "translate3d(2px, 0, 0)" },
+                "30%, 50%, 70%": { transform: "translate3d(-4px, 0, 0)" },
+                "40%, 60%": { transform: "translate3d(4px, 0, 0)" },
+              },
+              pop: {
+                "0%": { transform: "scale(0.9)", opacity: "0" },
+                "100%": { transform: "scale(1)", opacity: "1" },
+              },
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      body {
+        touch-action: pan-y;
+        overflow-x: hidden;
+        background-color: #0f172a;
+      }
+      .glass-panel {
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      }
+      .glass-btn {
+        background: linear-gradient(
+          135deg,
+          rgba(255, 255, 255, 0.05),
+          rgba(255, 255, 255, 0.01)
+        );
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease;
+      }
+      .glass-btn:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateY(-2px);
+        border-color: rgba(255, 255, 255, 0.3);
+      }
+      .glass-btn:active {
+        transform: translateY(1px);
+      }
+      canvas.draw-canvas {
+        touch-action: none;
+        background-color: #f8fafc;
+        cursor: crosshair;
+      }
+      .hide {
+        display: none !important;
+      }
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #4f46e5;
+        border-radius: 10px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #6366f1;
+      }
+      .custom-input {
+        background: rgba(0, 0, 0, 0.4);
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        transition: all 0.3s ease;
+      }
+      .custom-input:focus {
+        border-color: #a855f7;
+        box-shadow: 0 0 15px rgba(168, 85, 247, 0.4);
+        outline: none;
+      }
+    </style>
+  </head>
+  <body
+    class="text-gray-100 min-h-[100dvh] flex flex-col items-center justify-center p-3 sm:p-4 relative font-sans"
+  >
+    <!-- Ambient Background -->
+    <div class="fixed inset-0 overflow-hidden -z-10 pointer-events-none">
+      <div
+        class="absolute top-[-10%] left-[-10%] w-[300px] sm:w-[500px] h-[300px] sm:h-[500px] bg-purple-700/40 rounded-full mix-blend-screen filter blur-[80px] animate-blob"
+      ></div>
+      <div
+        class="absolute bottom-[-10%] right-[-10%] w-[300px] sm:w-[500px] h-[300px] sm:h-[500px] bg-blue-700/40 rounded-full mix-blend-screen filter blur-[80px] animate-blob animation-delay-2000"
+      ></div>
+    </div>
+
+    <!-- MAIN APP CONTAINER -->
+    <div
+      id="app"
+      class="w-full max-w-5xl glass-panel rounded-3xl sm:rounded-[2.5rem] p-4 sm:p-8 relative overflow-hidden min-h-[85vh] md:min-h-[700px] flex flex-col border-t border-l border-white/10 shadow-2xl"
+    >
+      <!-- LOADING OVERLAY -->
+      <div
+        id="loading-screen"
+        class="absolute inset-0 bg-gray-900/95 z-50 flex flex-col items-center justify-center backdrop-blur-md rounded-3xl sm:rounded-[2.5rem]"
+      >
+        <i
+          class="fa-solid fa-circle-notch fa-spin text-5xl text-purple-500 mb-4 drop-shadow-[0_0_15px_rgba(168,85,247,0.5)]"
+        ></i>
+        <p
+          class="text-gray-300 font-bold tracking-widest text-sm uppercase animate-pulse"
+        >
+          Memuat Aset Game...
+        </p>
+      </div>
+
+      <!-- HEADER -->
+      <header class="text-center mb-6 sm:mb-10 relative z-10 shrink-0">
+        <h1
+          class="text-3xl sm:text-5xl md:text-6xl font-extrabold tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 drop-shadow-lg"
+          data-i18n="title"
+        >
+          SPEED DRAW
+        </h1>
+        <p
+          class="text-gray-400 text-xs sm:text-sm mt-1 sm:mt-2 tracking-widest uppercase font-bold"
+          data-i18n="subtitle"
+        ></p>
+      </header>
+
+      <!-- 1. MAIN MENU -->
+      <div
+        id="menu-screen"
+        class="hide flex-1 flex flex-col items-center justify-center space-y-4 sm:space-y-5 z-10 w-full max-w-xs sm:max-w-sm mx-auto animate-pop"
+      >
+        <button
+          onclick="changeScreen('game-setup')"
+          class="w-full glass-btn text-white text-lg sm:text-xl py-4 sm:py-5 rounded-2xl sm:rounded-3xl font-bold flex items-center justify-center gap-3"
+        >
+          <i class="fa-solid fa-rocket text-pink-400 text-xl"></i>
+          <span data-i18n="btnStart"></span>
+        </button>
+        <button
+          onclick="changeScreen('howto-screen')"
+          class="w-full glass-btn text-white text-sm sm:text-lg py-3 sm:py-4 rounded-xl sm:rounded-2xl font-semibold flex items-center justify-center gap-3"
+        >
+          <i class="fa-solid fa-gamepad text-blue-400"></i>
+          <span data-i18n="btnHowTo"></span>
+        </button>
+        <button
+          onclick="changeScreen('settings-screen')"
+          class="w-full glass-btn text-white text-sm sm:text-lg py-3 sm:py-4 rounded-xl sm:rounded-2xl font-semibold flex items-center justify-center gap-3"
+        >
+          <i class="fa-solid fa-sliders text-purple-400"></i>
+          <span data-i18n="btnSettings"></span>
+        </button>
+
+        <!-- COPYRIGHT FOOTER -->
+        <div class="pt-6 mt-auto">
+          <a
+            href="https://github.com/JPROJECT-1"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-xs text-gray-500 hover:text-purple-400 transition-colors flex items-center justify-center gap-1.5 opacity-80 hover:opacity-100"
+          >
+            <i class="fa-regular fa-copyright"></i> 2026 Jasonpw Studio &bull;
+            YCYL Studio
+          </a>
+        </div>
+      </div>
+
+      <!-- 2. HOW TO PLAY -->
+      <div
+        id="howto-screen"
+        class="hide flex-1 flex flex-col items-center z-10 animate-pop w-full mx-auto max-w-lg"
+      >
+        <h2
+          class="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-pink-400 text-center"
+          data-i18n="howToTitle"
+        ></h2>
+        <div
+          class="glass-panel p-4 sm:p-6 rounded-2xl w-full mb-6 text-xs sm:text-sm text-gray-300 space-y-3 sm:space-y-4 leading-relaxed overflow-y-auto max-h-[50vh]"
+        >
+          <p class="flex items-start">
+            <i class="fa-solid fa-bolt text-yellow-400 mt-1 mr-3 shrink-0"></i
+            ><span data-i18n="howTo1"></span>
+          </p>
+          <p class="flex items-start">
+            <i class="fa-solid fa-pen-nib text-blue-400 mt-1 mr-3 shrink-0"></i
+            ><span data-i18n="howTo2"></span>
+          </p>
+          <p class="flex items-start">
+            <i class="fa-solid fa-clock text-green-400 mt-1 mr-3 shrink-0"></i
+            ><span data-i18n="howTo3"></span>
+          </p>
+          <p class="flex items-start">
+            <i class="fa-solid fa-brain text-purple-400 mt-1 mr-3 shrink-0"></i
+            ><span data-i18n="howTo4"></span>
+          </p>
+        </div>
+        <button
+          onclick="changeScreen('menu-screen')"
+          class="mt-auto px-6 sm:px-10 py-3 sm:py-4 bg-white/10 hover:bg-white/20 rounded-xl font-bold w-full sm:w-auto"
+          data-i18n="btnBack"
+        ></button>
+      </div>
+
+      <!-- 3. SETTINGS -->
+      <div
+        id="settings-screen"
+        class="hide flex-1 flex flex-col z-10 animate-pop w-full mx-auto max-w-md"
+      >
+        <h2
+          class="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-center text-purple-400"
+          data-i18n="settingsTitle"
+        ></h2>
+
+        <div
+          class="space-y-3 sm:space-y-4 w-full flex-1 overflow-y-auto pr-1 sm:pr-2 pb-4 scroll-smooth"
+        >
+          <!-- Dropdown Bahasa -->
+          <div class="relative custom-dropdown" data-id="set-lang">
+            <label
+              class="block text-xs sm:text-sm font-semibold mb-1 sm:mb-2 text-gray-300 ml-1"
+              data-i18n="labelLanguage"
+            ></label>
+            <div
+              class="selected-val bg-black/40 border border-white/10 rounded-xl p-3 sm:p-4 cursor-pointer flex justify-between items-center text-sm sm:text-base hover:border-purple-400 transition"
+            >
+              <span id="lang-display">English (EN)</span>
+              <i class="fa-solid fa-chevron-down text-xs text-gray-400"></i>
+            </div>
+            <div
+              class="options-list hide absolute w-full bg-gray-900 border border-white/20 rounded-xl mt-1 overflow-hidden z-50 shadow-2xl max-h-48 overflow-y-auto text-sm sm:text-base"
+            >
+              <div
+                class="opt p-3 sm:p-4 hover:bg-purple-600 cursor-pointer border-b border-white/5"
+                data-val="id"
+              >
+                Indonesia (ID)
+              </div>
+              <div
+                class="opt p-3 sm:p-4 hover:bg-purple-600 cursor-pointer border-b border-white/5"
+                data-val="en"
+              >
+                English (EN)
+              </div>
+              <div
+                class="opt p-3 sm:p-4 hover:bg-purple-600 cursor-pointer"
+                data-val="es"
+              >
+                Español (ES)
+              </div>
+              <div
+                class="opt p-3 sm:p-4 hover:bg-purple-600 cursor-pointer"
+                data-val="zh"
+              >
+                中文 (ZH)
+              </div>
+              <div
+                class="opt p-3 sm:p-4 hover:bg-purple-600 cursor-pointer"
+                data-val="ja"
+              >
+                日本語 (JA)
+              </div>
+              <div
+                class="opt p-3 sm:p-4 hover:bg-purple-600 cursor-pointer"
+                data-val="ru"
+              >
+                Русский (RU)
+              </div>
+              <div
+                class="opt p-3 sm:p-4 hover:bg-purple-600 cursor-pointer"
+                data-val="fr"
+              >
+                Français (FR)
+              </div>
+              <div
+                class="opt p-3 sm:p-4 hover:bg-purple-600 cursor-pointer"
+                data-val="ar"
+              >
+                العربية (AR)
+              </div>
+              <div
+                class="opt p-3 sm:p-4 hover:bg-purple-600 cursor-pointer"
+                data-val="hi"
+              >
+                हिन्दी (HI)
+              </div>
+            </div>
+          </div>
+
+          <!-- Dropdown Canvas -->
+          <div class="relative custom-dropdown" data-id="set-canvas">
+            <label
+              class="block text-xs sm:text-sm font-semibold mb-1 sm:mb-2 text-gray-300 ml-1"
+              data-i18n="labelCanvas"
+            ></label>
+            <div
+              class="selected-val bg-black/40 border border-white/10 rounded-xl p-3 sm:p-4 cursor-pointer flex justify-between items-center text-sm sm:text-base hover:border-purple-400 transition"
+            >
+              <span id="canvas-display">1 Canvas</span>
+              <i class="fa-solid fa-chevron-down text-xs text-gray-400"></i>
+            </div>
+            <div
+              class="options-list hide absolute w-full bg-gray-900 border border-white/20 rounded-xl mt-1 overflow-hidden z-50 shadow-2xl text-sm sm:text-base"
+            >
+              <div
+                class="opt p-3 sm:p-4 hover:bg-purple-600 cursor-pointer border-b border-white/5"
+                data-val="1"
+              >
+                1 Canvas
+              </div>
+              <div
+                class="opt p-3 sm:p-4 hover:bg-purple-600 cursor-pointer border-b border-white/5"
+                data-val="2"
+              >
+                2 Canvas
+              </div>
+              <div
+                class="opt p-3 sm:p-4 hover:bg-purple-600 cursor-pointer border-b border-white/5"
+                data-val="4"
+              >
+                4 Canvas
+              </div>
+              <div
+                class="opt p-3 sm:p-4 hover:bg-purple-600 cursor-pointer border-b border-white/5"
+                data-val="10"
+              >
+                10 Canvas
+              </div>
+              <div
+                class="opt p-3 sm:p-4 hover:bg-purple-600 cursor-pointer"
+                data-val="20"
+              >
+                20 Canvas
+              </div>
+            </div>
+          </div>
+
+          <!-- Dropdown Difficulty -->
+          <div class="relative custom-dropdown" data-id="set-diff">
+            <label
+              class="block text-xs sm:text-sm font-semibold mb-1 sm:mb-2 text-gray-300 ml-1"
+              data-i18n="labelDiff"
+            ></label>
+            <div
+              class="selected-val bg-black/40 border border-white/10 rounded-xl p-3 sm:p-4 cursor-pointer flex justify-between items-center text-sm sm:text-base hover:border-purple-400 transition"
+            >
+              <span id="diff-display" data-i18n="optDiff5000"
+                >Sangat Mudah</span
+              >
+              <i class="fa-solid fa-chevron-down text-xs text-gray-400"></i>
+            </div>
+            <div
+              class="options-list hide absolute w-full bg-gray-900 border border-white/20 rounded-xl mt-1 overflow-hidden z-50 shadow-2xl text-sm sm:text-base max-h-48 overflow-y-auto"
+            >
+              <div
+                class="opt p-3 sm:p-4 hover:bg-purple-600 cursor-pointer border-b border-white/5"
+                data-val="5000"
+                data-i18n="optDiff5000"
+              ></div>
+              <div
+                class="opt p-3 sm:p-4 hover:bg-purple-600 cursor-pointer border-b border-white/5"
+                data-val="4000"
+                data-i18n="optDiff4000"
+              ></div>
+              <div
+                class="opt p-3 sm:p-4 hover:bg-purple-600 cursor-pointer border-b border-white/5"
+                data-val="3000"
+                data-i18n="optDiff3000"
+              ></div>
+              <div
+                class="opt p-3 sm:p-4 hover:bg-purple-600 cursor-pointer border-b border-white/5"
+                data-val="2000"
+                data-i18n="optDiff2000"
+              ></div>
+              <div
+                class="opt p-3 sm:p-4 hover:bg-purple-600 cursor-pointer border-b border-white/5"
+                data-val="1500"
+                data-i18n="optDiff1500"
+              ></div>
+              <div
+                class="opt p-3 sm:p-4 hover:bg-purple-600 cursor-pointer"
+                data-val="1000"
+                data-i18n="optDiff1000"
+              ></div>
+            </div>
+          </div>
+
+          <!-- Dropdown Type -->
+          <div class="relative custom-dropdown" data-id="set-type">
+            <label
+              class="block text-xs sm:text-sm font-semibold mb-1 sm:mb-2 text-gray-300 ml-1"
+              data-i18n="labelType"
+            ></label>
+            <div
+              class="selected-val bg-black/40 border border-white/10 rounded-xl p-3 sm:p-4 cursor-pointer flex justify-between items-center text-sm sm:text-base hover:border-purple-400 transition"
+            >
+              <span id="type-display" data-i18n="optTypeAll"
+                >Tulisan & Suara</span
+              >
+              <i class="fa-solid fa-chevron-down text-xs text-gray-400"></i>
+            </div>
+            <div
+              class="options-list hide absolute w-full bg-gray-900 border border-white/20 rounded-xl mt-1 overflow-hidden z-50 shadow-2xl text-sm sm:text-base"
+            >
+              <div
+                class="opt p-3 sm:p-4 hover:bg-purple-600 cursor-pointer border-b border-white/5"
+                data-val="all"
+                data-i18n="optTypeAll"
+              ></div>
+              <div
+                class="opt p-3 sm:p-4 hover:bg-purple-600 cursor-pointer border-b border-white/5"
+                data-val="text"
+                data-i18n="optTypeText"
+              ></div>
+              <div
+                class="opt p-3 sm:p-4 hover:bg-purple-600 cursor-pointer"
+                data-val="voice"
+                data-i18n="optTypeVoice"
+              ></div>
+            </div>
+          </div>
+        </div>
+        <button
+          onclick="changeScreen('menu-screen')"
+          class="mt-4 shrink-0 mx-auto px-6 sm:px-10 py-3 sm:py-4 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl sm:rounded-2xl font-bold w-full text-base sm:text-lg shadow-lg hover:shadow-xl transition"
+          data-i18n="btnSave"
+        ></button>
+      </div>
+
+      <!-- 4. GAME SETUP -->
+      <div
+        id="game-setup"
+        class="hide flex-1 flex flex-col items-center justify-center z-10 animate-pop text-center w-full max-w-sm mx-auto"
+      >
+        <div
+          class="w-20 sm:w-28 h-20 sm:h-28 bg-gradient-to-tr from-pink-500 to-purple-500 rounded-full flex items-center justify-center mb-6 sm:mb-8 animate-pulse shadow-[0_0_30px_rgba(236,72,153,0.5)]"
+        >
+          <i class="fa-solid fa-headphones text-3xl sm:text-5xl text-white"></i>
+        </div>
+        <h2
+          class="text-2xl sm:text-3xl font-extrabold mb-2 sm:mb-3"
+          data-i18n="setupTitle"
+        ></h2>
+        <p
+          class="text-gray-400 mb-8 sm:mb-10 text-xs sm:text-sm px-4"
+          data-i18n="setupDesc"
+        ></p>
+        <button
+          onclick="startGame()"
+          class="px-8 sm:px-10 py-4 sm:py-5 w-full bg-white text-black rounded-2xl sm:rounded-3xl text-base sm:text-lg font-bold shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:scale-105 transition"
+          data-i18n="btnStartNow"
+        ></button>
+      </div>
+
+      <!-- 5. GAME SCREEN (DRAWING) -->
+      <div
+        id="game-screen"
+        class="hide flex-1 flex flex-col w-full h-full relative z-10"
+      >
+        <!-- Header Status -->
+        <div
+          class="flex justify-between items-center mb-3 sm:mb-4 bg-black/40 p-2 sm:p-4 rounded-xl sm:rounded-2xl border border-white/10 shrink-0 shadow-inner"
+        >
+          <div
+            class="text-xs sm:text-sm font-bold text-purple-400 flex items-center"
+          >
+            <i class="fa-solid fa-layer-group mr-2 hidden sm:inline-block"></i>
+            <span
+              id="game-progress"
+              class="text-white px-2 py-1 bg-purple-600/30 rounded mr-1 sm:mr-2"
+              >0/20</span
+            >
+            <span
+              data-i18n="gameProgress"
+              class="hidden xs:inline-block"
+            ></span>
+          </div>
+          <button
+            onclick="requestAbort()"
+            class="text-red-400 hover:text-red-300 font-bold text-xs sm:text-sm flex items-center px-2 py-1 sm:px-3 sm:py-2 bg-red-900/20 rounded-lg transition"
+          >
+            <i class="fa-solid fa-door-open mr-1 sm:mr-2"></i>
+            <span data-i18n="btnGiveUp"></span>
+          </button>
+        </div>
+
+        <!-- Subtitle AI -->
+        <div
+          id="subtitle-box"
+          class="h-10 sm:h-14 flex items-center justify-center mb-2 sm:mb-3 transition-all duration-300 opacity-0 transform scale-95 shrink-0"
+        >
+          <span
+            id="subtitle-text"
+            class="text-xl sm:text-3xl font-black text-white uppercase drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] tracking-widest text-center"
+          ></span>
+        </div>
+
+        <!-- Canvas Grid -->
+        <div
+          class="flex-1 relative w-full flex items-center justify-center mb-3 sm:mb-4 min-h-0"
+        >
+          <button
+            id="btn-prev"
+            onclick="navigateCanvas(-1)"
+            class="absolute left-[-5px] sm:left-[-15px] z-20 w-8 h-8 sm:w-12 sm:h-12 bg-white text-black rounded-full shadow-xl flex justify-center items-center hidden hover:bg-gray-200 transition"
+          >
+            <i class="fa-solid fa-chevron-left text-sm sm:text-base"></i>
+          </button>
+          <div
+            id="canvas-grid"
+            class="w-full h-full p-1 place-items-center grid gap-2 sm:gap-3"
+          ></div>
+          <button
+            id="btn-next"
+            onclick="navigateCanvas(1)"
+            class="absolute right-[-5px] sm:right-[-15px] z-20 w-8 h-8 sm:w-12 sm:h-12 bg-white text-black rounded-full shadow-xl flex justify-center items-center hidden hover:bg-gray-200 transition"
+          >
+            <i class="fa-solid fa-chevron-right text-sm sm:text-base"></i>
+          </button>
+        </div>
+
+        <button
+          onclick="confirmSubmitDrawing()"
+          class="w-full py-3 sm:py-5 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl sm:rounded-2xl font-bold text-sm sm:text-lg shadow-[0_4px_20px_rgba(16,185,129,0.3)] hover:shadow-[0_4px_25px_rgba(16,185,129,0.5)] transition shrink-0"
+        >
+          <i class="fa-solid fa-check-double mr-1 sm:mr-2"></i>
+          <span data-i18n="btnSubmitDraw"></span>
+        </button>
+      </div>
+
+      <!-- 6. EVALUATION SCREEN -->
+      <div
+        id="eval-screen"
+        class="hide flex-1 flex flex-col items-center justify-center w-full z-10 animate-pop"
+      >
+        <div class="text-center mb-4 sm:mb-6 w-full">
+          <p
+            class="text-purple-400 font-bold text-xs sm:text-sm uppercase tracking-widest mb-1"
+            data-i18n="evalSubtitle"
+          ></p>
+          <h2
+            class="text-2xl sm:text-4xl font-extrabold text-white px-2"
+            data-i18n="evalTitle"
+          ></h2>
+        </div>
+
+        <div
+          id="eval-img-container"
+          class="mb-6 sm:mb-8 p-1.5 sm:p-2.5 bg-gradient-to-tr from-purple-600 to-pink-500 rounded-2xl sm:rounded-3xl shadow-[0_0_20px_rgba(217,70,239,0.2)]"
+        >
+          <div
+            class="relative bg-white rounded-xl sm:rounded-2xl overflow-hidden aspect-square w-full max-w-[14rem] sm:max-w-[20rem]"
+          >
+            <span
+              id="eval-number"
+              class="absolute top-2 left-2 bg-black/80 backdrop-blur-sm text-white px-2 sm:px-3 py-1 rounded-lg text-[10px] sm:text-xs font-bold z-10"
+              >1/20</span
+            >
+            <img
+              id="eval-image"
+              src=""
+              class="w-full h-full object-contain bg-[#f8fafc]"
+            />
+          </div>
+        </div>
+
+        <div class="w-full max-w-xs sm:max-w-sm relative">
+          <input
+            type="text"
+            id="eval-input"
+            autocomplete="off"
+            class="w-full custom-input rounded-xl sm:rounded-2xl p-3 sm:p-4 text-white text-center text-lg sm:text-2xl font-bold mb-3 sm:mb-4 shadow-inner"
+            data-placeholder-i18n="evalPlaceholder"
+          />
+          <button
+            onclick="submitEvaluation()"
+            class="w-full py-3 sm:py-4 bg-white text-black hover:bg-gray-200 rounded-xl sm:rounded-2xl font-bold text-base sm:text-lg shadow-[0_4px_15px_rgba(255,255,255,0.2)] transition"
+          >
+            <span data-i18n="btnGuess"></span>
+            <i class="fa-solid fa-arrow-right ml-1 sm:ml-2"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- 7. RESULT SCREEN -->
+      <div
+        id="result-screen"
+        class="hide flex-1 flex flex-col items-center justify-center w-full z-10 animate-pop"
+      >
+        <h2
+          class="text-3xl sm:text-5xl font-extrabold mb-2 sm:mb-4 text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-blue-400 text-center"
+          data-i18n="resultTitle"
+        ></h2>
+        <div
+          id="final-score-text"
+          class="text-xl sm:text-3xl mb-6 sm:mb-8 text-white font-black bg-black/40 px-6 sm:px-8 py-2 sm:py-3 rounded-full border border-white/10 shadow-lg flex items-center justify-center"
+        ></div>
+
+        <div
+          class="w-full max-w-xl h-40 sm:h-56 mb-6 sm:mb-10 bg-black/30 p-2 sm:p-4 rounded-xl sm:rounded-3xl border border-white/5 shadow-inner"
+        >
+          <canvas id="scoreChart"></canvas>
+        </div>
+
+        <div
+          class="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full justify-center max-w-sm sm:max-w-md mx-auto"
+        >
+          <button
+            onclick="shareResult()"
+            class="flex-1 py-3 sm:py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 rounded-xl sm:rounded-2xl font-bold text-sm sm:text-base shadow-[0_4px_15px_rgba(59,130,246,0.3)] transition"
+          >
+            <i class="fa-solid fa-share-nodes mr-1 sm:mr-2"></i>
+            <span data-i18n="btnShare"></span>
+          </button>
+          <button
+            onclick="resetApp()"
+            class="flex-1 py-3 sm:py-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl sm:rounded-2xl font-bold text-sm sm:text-base transition"
+          >
+            <i class="fa-solid fa-rotate-right mr-1 sm:mr-2"></i>
+            <span data-i18n="btnRestart"></span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CUSTOM MODAL & TOAST -->
+    <div
+      id="custom-modal"
+      class="fixed inset-0 bg-black/90 backdrop-blur-sm z-[100] flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 p-4"
+    >
+      <div
+        class="bg-gray-900 border border-white/10 p-5 sm:p-8 rounded-[2rem] w-full max-w-sm transform scale-95 transition-transform shadow-2xl"
+        id="modal-content"
+      >
+        <div class="text-center mb-6 sm:mb-8">
+          <i
+            id="modal-icon"
+            class="fa-solid fa-triangle-exclamation text-yellow-400 text-4xl sm:text-5xl mb-4 drop-shadow-md"
+          ></i>
+          <h3
+            id="modal-title"
+            class="text-xl sm:text-2xl font-extrabold text-white mb-2"
+          ></h3>
+          <p
+            id="modal-desc"
+            class="text-gray-400 text-xs sm:text-sm leading-relaxed px-2"
+          ></p>
+        </div>
+        <div class="flex flex-col sm:flex-row gap-3">
+          <button
+            id="btn-modal-cancel"
+            class="flex-1 py-3 sm:py-4 bg-gray-800 rounded-xl sm:rounded-2xl font-bold text-gray-300 hover:bg-gray-700 transition text-sm sm:text-base"
+          ></button>
+          <button
+            id="btn-modal-ok"
+            class="flex-1 py-3 sm:py-4 bg-purple-600 rounded-xl sm:rounded-2xl font-bold text-white hover:bg-purple-500 transition text-sm sm:text-base shadow-lg"
+          ></button>
+        </div>
+      </div>
+    </div>
+
+    <div
+      id="custom-toast"
+      class="fixed top-4 sm:top-6 right-4 sm:right-6 bg-gray-900 border border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.5)] px-4 sm:px-6 py-3 sm:py-4 rounded-xl sm:rounded-2xl z-[100] transform translate-x-[150%] transition-transform duration-300 flex items-center gap-3"
+    >
+      <i class="fa-solid fa-bell text-blue-400 text-base sm:text-lg"></i>
+      <span
+        id="toast-msg"
+        class="text-xs sm:text-sm font-bold text-white"
+      ></span>
+    </div>
+
+    <!-- MAIN SCRIPT -->
+    <script>
+      let uiData = {};
+      let wordData = {};
+      let dataLoaded = false;
+
+      const voiceLangMap = {
+        id: "id-ID",
+        en: "en-US",
+        es: "es-ES",
+        zh: "zh-CN",
+        ja: "ja-JP",
+        ru: "ru-RU",
+        fr: "fr-FR",
+        ar: "ar-SA",
+        hi: "hi-IN",
+      };
+      const TOTAL_ROUNDS = 20;
+
+      // Default settings init
+      let dropdownSettings = { lang: "en", canvas: 1, diff: 5000, type: "all" };
+
+      // 1. FETCH JSON ASYNC
+      async function loadJSON() {
+        try {
+          const resUI = await fetch("ui.json");
+          const resDT = await fetch("dt.json");
+          uiData = await resUI.json();
+          wordData = await resDT.json();
+
+          dataLoaded = true;
+          document.getElementById("loading-screen").classList.add("hide");
+
+          // --- AUTO DETECT LANGUAGE ---
+          const userLangFull =
+            navigator.language || navigator.userLanguage || "";
+          const userLang = userLangFull.split("-")[0].toLowerCase();
+
+          if (uiData[userLang] && wordData[userLang]) {
+            dropdownSettings.lang = userLang;
+          } else {
+            dropdownSettings.lang = "en";
+          }
+
+          // Perbaikan TextContent & hapus spasi berlebih
+          const activeLangOpt = document.querySelector(
+            `.custom-dropdown[data-id="set-lang"] .opt[data-val="${dropdownSettings.lang}"]`,
+          );
+          if (activeLangOpt) {
+            document.getElementById("lang-display").innerText =
+              activeLangOpt.textContent.trim();
+          }
+
+          updateUI();
+          changeScreen("menu-screen");
+        } catch (err) {
+          alert(
+            "Gagal memuat JSON. Pastikan HTML ini dijalankan melalui Local Server.",
+          );
+          console.error(err);
+        }
+      }
+
+      // 2. MULTILANGUAGE ENGINE (i18n)
+      function updateUI() {
+        if (!dataLoaded) return;
+        const langData = uiData[dropdownSettings.lang] || uiData["en"];
+
+        document.querySelectorAll("[data-i18n]").forEach((el) => {
+          const key = el.getAttribute("data-i18n");
+          if (langData[key]) el.innerHTML = langData[key];
+        });
+        document.querySelectorAll("[data-placeholder-i18n]").forEach((el) => {
+          const key = el.getAttribute("data-placeholder-i18n");
+          if (langData[key]) el.placeholder = langData[key];
+        });
+
+        document.getElementById("btn-modal-cancel").innerText =
+          langData.btnCancel;
+        document.getElementById("btn-modal-ok").innerText = langData.btnOk;
+        updateDropdownLabels();
+      }
+
+      function updateDropdownLabels() {
+        const l = uiData[dropdownSettings.lang] || uiData["en"];
+        const activeDiff = document.querySelector(
+          `.opt[data-val="${dropdownSettings.diff}"]`,
+        );
+        if (activeDiff)
+          document.getElementById("diff-display").innerText =
+            l[activeDiff.getAttribute("data-i18n")] ||
+            activeDiff.textContent.trim();
+        const activeType = document.querySelector(
+          `.opt[data-val="${dropdownSettings.type}"]`,
+        );
+        if (activeType)
+          document.getElementById("type-display").innerText =
+            l[activeType.getAttribute("data-i18n")] ||
+            activeType.textContent.trim();
+      }
+
+      // 3. SOUND & COMPONENTS
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      function playSound(type) {
+        if (audioCtx.state === "suspended") audioCtx.resume();
+        const osc = audioCtx.createOscillator(),
+          gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        if (type === "correct") {
+          osc.type = "sine";
+          osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(
+            1200,
+            audioCtx.currentTime + 0.1,
+          );
+          gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(
+            0.01,
+            audioCtx.currentTime + 0.5,
+          );
+          osc.start();
+          osc.stop(audioCtx.currentTime + 0.5);
+        } else if (type === "wrong") {
+          osc.type = "sawtooth";
+          osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(
+            100,
+            audioCtx.currentTime + 0.2,
+          );
+          gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(
+            0.01,
+            audioCtx.currentTime + 0.3,
+          );
+          osc.start();
+          osc.stop(audioCtx.currentTime + 0.3);
+        }
+      }
+
+      let modalCallback = null;
+      function customConfirm(title, desc, onConfirm, type = "warning") {
+        document.getElementById("modal-title").innerText = title;
+        document.getElementById("modal-desc").innerText = desc;
+        document.getElementById("modal-icon").className =
+          type === "warning"
+            ? "fa-solid fa-triangle-exclamation text-yellow-400 text-4xl sm:text-5xl mb-4 drop-shadow-md"
+            : "fa-solid fa-circle-info text-blue-400 text-4xl sm:text-5xl mb-4 drop-shadow-md";
+        document.getElementById("btn-modal-cancel").style.display = "block";
+        modalCallback = onConfirm;
+        document
+          .getElementById("custom-modal")
+          .classList.remove("opacity-0", "pointer-events-none");
+        document.getElementById("modal-content").classList.remove("scale-95");
+      }
+      function customAlert(title, desc, type = "info") {
+        customConfirm(title, desc, null, type);
+        document.getElementById("btn-modal-cancel").style.display = "none";
+      }
+      document.getElementById("btn-modal-cancel").onclick = () => {
+        closeModal();
+        modalCallback = null;
+      };
+      document.getElementById("btn-modal-ok").onclick = () => {
+        closeModal();
+        if (modalCallback) modalCallback();
+      };
+      function closeModal() {
+        document
+          .getElementById("custom-modal")
+          .classList.add("opacity-0", "pointer-events-none");
+        document.getElementById("modal-content").classList.add("scale-95");
+      }
+
+      function customToast(msg) {
+        document.getElementById("toast-msg").innerText = msg;
+        const toast = document.getElementById("custom-toast");
+        toast.classList.remove("translate-x-[150%]");
+        setTimeout(() => toast.classList.add("translate-x-[150%]"), 3000);
+      }
+
+      // Custom Select Logic
+      document.querySelectorAll(".custom-dropdown").forEach((dd) => {
+        const selected = dd.querySelector(".selected-val");
+        const list = dd.querySelector(".options-list");
+        const typeId = dd.dataset.id;
+        selected.onclick = (e) => {
+          e.stopPropagation();
+          document.querySelectorAll(".options-list").forEach((el) => {
+            if (el !== list) el.classList.add("hide");
+          });
+          list.classList.toggle("hide");
+        };
+        dd.querySelectorAll(".opt").forEach((opt) => {
+          opt.onclick = () => {
+            const val = opt.dataset.val;
+            if (typeId === "set-lang") {
+              if (!uiData[val] || !wordData[val]) {
+                customAlert(
+                  "Oops!",
+                  uiData[dropdownSettings.lang].errLang,
+                  "warning",
+                );
+                list.classList.add("hide");
+                return;
+              }
+              dropdownSettings.lang = val;
+              updateUI();
+              selected.querySelector("span").innerText = opt.textContent.trim();
+            }
+            if (typeId === "set-canvas") {
+              dropdownSettings.canvas = parseInt(val);
+              selected.querySelector("span").innerText = opt.textContent.trim();
+            }
+            if (typeId === "set-diff") {
+              dropdownSettings.diff = parseInt(val);
+              updateDropdownLabels();
+            }
+            if (typeId === "set-type") {
+              dropdownSettings.type = val;
+              updateDropdownLabels();
+            }
+            list.classList.add("hide");
+          };
+        });
+      });
+      document.addEventListener("click", () => {
+        document
+          .querySelectorAll(".options-list")
+          .forEach((el) => el.classList.add("hide"));
+      });
+
+      // 4. GAME ENGINE
+      let gameState = {
+        wordsToDraw: [],
+        currentWordIndex: 0,
+        intervalId: null,
+        canvases: [],
+        contexts: [],
+        currentCanvasPage: 0,
+        evaluationIndex: 0,
+        score: 0,
+        drawingData: [],
+        historyScores: [0],
+      };
+      let chartInstance = null;
+      const synth = window.speechSynthesis;
+
+      function changeScreen(id) {
+        document.querySelectorAll("#app > div").forEach((el) => {
+          if (
+            el.id !== "app" &&
+            !el.id.includes("custom") &&
+            el.id !== "loading-screen"
+          )
+            el.classList.add("hide");
+        });
+        const target = document.getElementById(id);
+        target.classList.remove("hide", "animate-pop");
+        void target.offsetWidth;
+        target.classList.add("animate-pop");
+      }
+
+      function startGame() {
+        const pool = wordData[dropdownSettings.lang] || wordData["en"];
+        let shuffled = [...pool].sort(() => 0.5 - Math.random());
+        gameState.wordsToDraw = shuffled.slice(0, TOTAL_ROUNDS);
+        gameState.currentWordIndex = 0;
+        gameState.currentCanvasPage = 0;
+        gameState.drawingData = [];
+        gameState.historyScores = [0];
+
+        setupCanvasGrid();
+        changeScreen("game-screen");
+        document.getElementById("game-progress").innerText = `0/20`;
+        setTimeout(nextWordInstruction, 1500);
+      }
+
+      function requestAbort() {
+        customConfirm(
+          uiData[dropdownSettings.lang].modalQuitTitle,
+          uiData[dropdownSettings.lang].modalQuitDesc,
+          abortGame,
+        );
+      }
+      function abortGame() {
+        clearTimeout(gameState.intervalId);
+        synth.cancel();
+        changeScreen("menu-screen");
+      }
+
+      function getResponsiveGridCols(viewCount) {
+        if (viewCount === 1) return "grid-cols-1";
+        if (viewCount === 2) return "grid-cols-1 sm:grid-cols-2";
+        if (viewCount === 4) return "grid-cols-2";
+        if (viewCount === 10)
+          return "grid-cols-2 sm:grid-cols-3 md:grid-cols-5";
+        if (viewCount === 20)
+          return "grid-cols-2 sm:grid-cols-4 md:grid-cols-5";
+        return "grid-cols-1";
+      }
+
+      function setupCanvasGrid() {
+        const grid = document.getElementById("canvas-grid");
+        grid.innerHTML = "";
+        gameState.canvases = [];
+        gameState.contexts = [];
+        grid.className = `w-full h-full p-1 place-items-center grid gap-2 sm:gap-3 ${getResponsiveGridCols(dropdownSettings.canvas)}`;
+
+        for (let i = 0; i < TOTAL_ROUNDS; i++) {
+          const wrap = document.createElement("div");
+          wrap.className = `relative w-full h-full min-h-[80px] sm:min-h-[100px] border border-white/20 rounded-xl sm:rounded-2xl overflow-hidden shadow-lg`;
+          const label = document.createElement("div");
+          label.className =
+            "absolute top-1 left-1 sm:top-2 sm:left-2 bg-black/60 backdrop-blur-md text-white text-[9px] sm:text-[10px] px-1.5 py-0.5 sm:px-2 sm:py-1 rounded font-bold z-10 pointer-events-none";
+          label.innerText = i + 1;
+          const canvas = document.createElement("canvas");
+          canvas.className = "draw-canvas w-full h-full block bg-[#f8fafc]";
+
+          wrap.appendChild(label);
+          wrap.appendChild(canvas);
+          grid.appendChild(wrap);
+          gameState.canvases.push(canvas);
+
+          const ctx = canvas.getContext("2d");
+          ctx.lineCap = "round";
+          ctx.lineJoin = "round";
+          ctx.lineWidth = window.innerWidth < 400 ? 2 : 3;
+          ctx.strokeStyle = "#0f172a";
+          gameState.contexts.push(ctx);
+
+          let drawing = false;
+          let lastPos = null;
+          const getPos = (e) => {
+            const rect = canvas.getBoundingClientRect();
+            let x = e.clientX,
+              y = e.clientY;
+            if (e.touches) {
+              x = e.touches[0].clientX;
+              y = e.touches[0].clientY;
+            }
+            return { x: x - rect.left, y: y - rect.top };
+          };
+          const start = (e) => {
+            e.preventDefault();
+            drawing = true;
+            lastPos = getPos(e);
+          };
+          const draw = (e) => {
+            if (!drawing) return;
+            e.preventDefault();
+            const pos = getPos(e);
+            ctx.beginPath();
+            ctx.moveTo(lastPos.x, lastPos.y);
+            ctx.lineTo(pos.x, pos.y);
+            ctx.stroke();
+            lastPos = pos;
+          };
+          const stop = () => {
+            drawing = false;
+          };
+
+          canvas.addEventListener("mousedown", start);
+          canvas.addEventListener("mousemove", draw);
+          window.addEventListener("mouseup", stop);
+          canvas.addEventListener("touchstart", start, { passive: false });
+          canvas.addEventListener("touchmove", draw, { passive: false });
+          window.addEventListener("touchend", stop);
+        }
+        setTimeout(() => {
+          gameState.canvases.forEach((c) => {
+            c.width = c.clientWidth;
+            c.height = c.clientHeight;
+          });
+          updateCanvasVisibility();
+        }, 150);
+      }
+
+      function updateCanvasVisibility() {
+        const v = dropdownSettings.canvas,
+          startIdx = gameState.currentCanvasPage * v,
+          endIdx = startIdx + v - 1;
+        const wraps = document.getElementById("canvas-grid").children;
+        for (let i = 0; i < wraps.length; i++)
+          wraps[i].style.display =
+            i >= startIdx && i <= endIdx ? "block" : "none";
+        document.getElementById("btn-prev").style.display =
+          gameState.currentCanvasPage > 0 ? "flex" : "none";
+        document.getElementById("btn-next").style.display =
+          endIdx < TOTAL_ROUNDS - 1 ? "flex" : "none";
+      }
+      function navigateCanvas(dir) {
+        gameState.currentCanvasPage = Math.max(
+          0,
+          Math.min(
+            Math.ceil(TOTAL_ROUNDS / dropdownSettings.canvas) - 1,
+            gameState.currentCanvasPage + dir,
+          ),
+        );
+        updateCanvasVisibility();
+      }
+
+      function nextWordInstruction() {
+        if (gameState.currentWordIndex >= TOTAL_ROUNDS) return;
+        const word = gameState.wordsToDraw[gameState.currentWordIndex];
+        document.getElementById("game-progress").innerText =
+          `${gameState.currentWordIndex + 1}/20`;
+
+        const box = document.getElementById("subtitle-box"),
+          txt = document.getElementById("subtitle-text");
+        const type = dropdownSettings.type,
+          delay = dropdownSettings.diff;
+
+        if (type === "all" || type === "text") {
+          txt.innerText = word;
+          box.classList.remove("opacity-0", "scale-95");
+          box.classList.add("scale-100");
+        } else {
+          txt.innerText = "";
+        }
+
+        if (type === "all" || type === "voice") {
+          synth.cancel();
+          const utt = new SpeechSynthesisUtterance(word);
+          utt.lang = voiceLangMap[dropdownSettings.lang] || "en-US";
+          if (delay <= 1500) utt.rate = 1.6;
+          synth.speak(utt);
+        }
+
+        setTimeout(() => {
+          box.classList.remove("scale-100");
+          box.classList.add("opacity-0", "scale-95");
+        }, delay * 0.7);
+
+        gameState.currentWordIndex++;
+        gameState.intervalId = setTimeout(nextWordInstruction, delay);
+      }
+
+      function confirmSubmitDrawing() {
+        if (gameState.currentWordIndex < TOTAL_ROUNDS)
+          customConfirm(
+            uiData[dropdownSettings.lang].modalUnfinishedTitle,
+            uiData[dropdownSettings.lang].modalUnfinishedDesc,
+            finalizeDrawing,
+          );
+        else finalizeDrawing();
+      }
+
+      function finalizeDrawing() {
+        clearTimeout(gameState.intervalId);
+        synth.cancel();
+        gameState.canvases.forEach((c) => {
+          const tc = document.createElement("canvas");
+          tc.width = c.width;
+          tc.height = c.height;
+          const tx = tc.getContext("2d");
+          tx.fillStyle = "#f8fafc";
+          tx.fillRect(0, 0, tc.width, tc.height);
+          tx.drawImage(c, 0, 0);
+          gameState.drawingData.push(tc.toDataURL("image/jpeg", 0.8));
+        });
+        gameState.evaluationIndex = 0;
+        gameState.score = 0;
+        changeScreen("eval-screen");
+        loadEvaluation();
+      }
+
+      function loadEvaluation() {
+        if (gameState.evaluationIndex >= TOTAL_ROUNDS) return showResult();
+        const imgCont = document.getElementById("eval-img-container");
+        imgCont.className =
+          "mb-6 sm:mb-8 p-1.5 sm:p-2.5 bg-gradient-to-tr from-purple-600 to-pink-500 rounded-2xl sm:rounded-3xl shadow-[0_0_20px_rgba(217,70,239,0.2)] transition-transform duration-200 animate-pop";
+        document.getElementById("eval-number").innerText =
+          `${gameState.evaluationIndex + 1}/20`;
+        document.getElementById("eval-image").src =
+          gameState.drawingData[gameState.evaluationIndex];
+
+        const inp = document.getElementById("eval-input");
+        inp.value = "";
+        inp.style.borderColor = "";
+        inp.focus();
+        inp.onkeydown = (e) => {
+          if (e.key === "Enter") submitEvaluation();
+        };
+      }
+
+      function submitEvaluation() {
+        const inp = document.getElementById("eval-input"),
+          val = inp.value.trim().toLowerCase(),
+          correct =
+            gameState.wordsToDraw[gameState.evaluationIndex].toLowerCase();
+        const imgCont = document.getElementById("eval-img-container");
+        if (val === correct) {
+          playSound("correct");
+          gameState.score++;
+          inp.style.borderColor = "#22c55e";
+          imgCont.classList.remove("from-purple-600", "to-pink-500");
+          imgCont.classList.add("from-green-400", "to-emerald-500");
+        } else {
+          playSound("wrong");
+          inp.style.borderColor = "#ef4444";
+          imgCont.classList.remove("from-purple-600", "to-pink-500");
+          imgCont.classList.add(
+            "from-red-500",
+            "to-orange-500",
+            "animate-shake",
+          );
+          setTimeout(() => imgCont.classList.remove("animate-shake"), 500);
+          customToast(
+            uiData[dropdownSettings.lang].toastWrong + correct.toUpperCase(),
+          );
+        }
+        gameState.historyScores.push(gameState.score);
+        inp.disabled = true;
+        setTimeout(() => {
+          inp.disabled = false;
+          gameState.evaluationIndex++;
+          loadEvaluation();
+        }, 1000);
+      }
+
+      function showResult() {
+        changeScreen("result-screen");
+        document.getElementById("final-score-text").innerHTML =
+          `<i class="fa-solid fa-trophy text-yellow-400 mr-2 sm:mr-3"></i> ${gameState.score} / ${TOTAL_ROUNDS}`;
+        if (chartInstance) chartInstance.destroy();
+        const labels = ["Start"];
+        for (let i = 1; i <= TOTAL_ROUNDS; i++) labels.push(i.toString());
+
+        Chart.defaults.color = "#cbd5e1";
+        Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
+
+        chartInstance = new Chart(
+          document.getElementById("scoreChart").getContext("2d"),
+          {
+            type: "line",
+            data: {
+              labels: labels,
+              datasets: [
+                {
+                  data: gameState.historyScores,
+                  borderColor: "#a855f7",
+                  backgroundColor: "rgba(168, 85, 247, 0.2)",
+                  borderWidth: window.innerWidth < 400 ? 2 : 4,
+                  pointRadius: window.innerWidth < 400 ? 2 : 4,
+                  fill: true,
+                  tension: 0.4,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  max: TOTAL_ROUNDS,
+                  ticks: { stepSize: 5 },
+                },
+                x: {
+                  ticks: { maxTicksLimit: window.innerWidth < 400 ? 6 : 10 },
+                },
+              },
+              plugins: { legend: { display: false } },
+            },
+          },
+        );
+      }
+
+      async function shareResult() {
+        const msg = uiData[dropdownSettings.lang].shareMsg.replace(
+            "{score}",
+            gameState.score,
+          ),
+          url = window.location.href;
+        if (navigator.share) {
+          try {
+            await navigator.share({
+              title: "Speed Draw Challenge",
+              text: msg,
+              url: url,
+            });
+          } catch (err) {
+            console.log("Share canceled");
+          }
+        } else {
+          navigator.clipboard.writeText(`${msg} ${url}`);
+          customToast("Link disalin!");
+        }
+      }
+
+      function resetApp() {
+        changeScreen("menu-screen");
+      }
+
+      // Start App
+      loadJSON();
+    </script>
+  </body>
+</html>
