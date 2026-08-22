@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    
+    <!-- Meta Data Standard -->
+    <title>BlindTimer | YCYL Studio</title>
+    <meta name="description" content="BlindTimer - Game uji insting waktu minimalis. Tebak dan hentikan waktu secara buta! Dikembangkan oleh JASONPW (YCYL Studio).">
+    <meta name="author" content="JASONPW">
+    <meta name="publisher" content="YCYL Studio">
+    <meta name="theme-color" content="#090e17">
+    <meta name="robots" content="index, follow">
+
+    <!-- OpenGraph Meta Tags (Social Media Share) -->
+    <meta property="og:title" content="BlindTimer | Uji Insting Waktumu">
+    <meta property="og:description" content="Tantang dirimu di BlindTimer! Berani tebak waktu dalam keadaan layar buta? Mainkan sekarang.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://jasonpw.web.id/blindtimer">
+    <meta property="og:image" content="https://jasonpw.web.id/assets/blindtimer-og.png">
+    <meta property="og:site_name" content="BlindTimer by YCYL Studio">
+
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="BlindTimer | YCYL Studio">
+    <meta name="twitter:description" content="Berani tebak waktu tanpa melihat? Uji insting waktumu sekarang!">
+    <meta name="twitter:image" content="https://jasonpw.web.id/assets/blindtimer-og.png">
+
+    <!-- Custom SVG Favicon (Neon Timer Logo) -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Ccircle cx='256' cy='256' r='220' stroke='%233B82F6' stroke-width='32' stroke-linecap='round' stroke-dasharray='150 50' fill='none'/%3E%3Ccircle cx='256' cy='256' r='160' fill='rgba(168, 85, 247, 0.2)'/%3E%3Cpath d='M256 100 v156 l80 80' stroke='%23A855F7' stroke-width='32' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E">
+
+    <!-- Schema.org JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "BlindTimer",
+      "url": "https://jasonpw.web.id/blindtimer",
+      "description": "Game berbasis web untuk menguji insting waktu tanpa melihat indikator detik.",
+      "applicationCategory": "GameApplication",
+      "genre": "Puzzle, Casual",
+      "author": {
+        "@type": "Person",
+        "name": "JASONPW",
+        "url": "https://jasonpw.web.id/"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "YCYL Studio",
+        "url": "https://ycylstudio.web.id/"
+      }
+    }
+    </script>
+
+    <!-- Tailwind & Fonts -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Poppins', 'sans-serif'] },
+                    colors: { darkBg: '#090e17', glass: 'rgba(255, 255, 255, 0.05)' }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { 
+            background-color: #090e17; 
+            color: #fff; 
+            overflow-x: hidden; 
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { 
+            background: rgba(255, 255, 255, 0.15); 
+            border-radius: 10px; 
+        }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(59, 130, 246, 0.5); }
+        * { 
+            scrollbar-width: thin; 
+            scrollbar-color: rgba(255, 255, 255, 0.15) transparent; 
+        }
+        
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        }
+        .bento-item {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+        }
+        .bento-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.2);
+            border-color: rgba(59, 130, 246, 0.4);
+        }
+        
+        .btn-neon { transition: all 0.2s ease; }
+        .btn-neon:active { transform: scale(0.95); }
+        
+        .screen { display: none; opacity: 0; transition: opacity 0.3s ease; }
+        .screen.active { display: flex; flex-direction: column; opacity: 1; }
+
+        #custom-modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+            z-index: 50; display: none; align-items: center; justify-content: center;
+        }
+        #custom-toast {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px);
+            background: rgba(59, 130, 246, 0.9); color: white; padding: 12px 24px;
+            border-radius: 50px; font-weight: 600; z-index: 60; transition: transform 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        #custom-toast.show { transform: translateX(-50%) translateY(0); }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-3 sm:p-4 relative">
+
+    <!-- Toast Notification -->
+    <div id="custom-toast" class="text-sm sm:text-base">Message</div>
+
+    <!-- Custom Modal -->
+    <div id="custom-modal-overlay" class="p-4">
+        <div class="glass-panel rounded-2xl p-5 sm:p-6 max-w-sm w-full border border-white/10 text-center relative flex flex-col items-center">
+            <h3 id="modal-title" class="text-lg sm:text-xl font-bold mb-2 w-full">Title</h3>
+            <p id="modal-desc" class="text-gray-300 text-xs sm:text-sm mb-5 sm:mb-6 whitespace-pre-line w-full">Description</p>
+            <div id="modal-actions" class="flex gap-2 sm:gap-3 justify-center w-full flex-wrap text-sm sm:text-base">
+                <!-- Buttons/Inputs injected via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- App Container -->
+    <div class="glass-panel rounded-[2rem] w-full max-w-md min-w-[280px] p-5 sm:p-6 relative z-10">
+        
+        <!-- Navbar -->
+        <div class="flex justify-between items-center mb-5 sm:mb-6">
+            <div class="flex items-center gap-2">
+                <!-- Logo SVG Native -->
+                <svg class="w-6 h-6 sm:w-8 sm:h-8" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="256" cy="256" r="220" stroke="#3B82F6" stroke-width="40" stroke-linecap="round" stroke-dasharray="150 50"/>
+                    <circle cx="256" cy="256" r="140" fill="rgba(168, 85, 247, 0.3)"/>
+                    <path d="M256 120 v136 l60 60" stroke="#A855F7" stroke-width="40" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <div class="font-extrabold text-lg sm:text-xl tracking-tight bg-gradient-to-r from-blue-400 to-indigo-500 bg-clip-text text-transparent">
+                    BlindTimer
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <button id="soundBtn" class="bg-white/5 hover:bg-white/10 w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition border border-white/10">
+                    <i class="fa-solid fa-volume-high text-blue-400 text-sm sm:text-base"></i>
+                </button>
+                <button id="langBtn" class="bg-white/5 hover:bg-white/10 px-3 sm:px-4 h-9 sm:h-10 rounded-full text-xs sm:text-sm font-semibold transition border border-white/10">
+                    ID
+                </button>
+            </div>
+        </div>
+
+        <!-- 1. START SCREEN -->
+        <div id="screen-start" class="screen active">
+            <div class="grid grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4">
+                <div class="col-span-2 glass-panel p-5 sm:p-6 rounded-2xl bento-item bg-gradient-to-br from-blue-600/20 to-purple-600/20 border border-blue-500/20">
+                    <h2 class="text-xs sm:text-sm text-blue-300 font-semibold mb-1" data-i18n="totalScore">Total Skor Pusat</h2>
+                    <div class="text-3xl sm:text-4xl font-black tracking-tight" id="globalScoreDisplay">0</div>
+                    <button onclick="shareGlobalScore()" class="mt-3 text-[10px] sm:text-xs bg-white/10 hover:bg-white/20 py-1.5 px-3 rounded-lg transition">
+                        <i class="fa-solid fa-share-nodes mr-1"></i> <span data-i18n="shareScore">Share Skor</span>
+                    </button>
+                </div>
+
+                <button onclick="showScreen('screen-modes')" class="col-span-2 btn-neon bg-blue-600 hover:bg-blue-500 py-3 sm:py-4 rounded-2xl font-bold text-base sm:text-lg shadow-[0_0_20px_rgba(37,99,235,0.3)]">
+                    <i class="fa-solid fa-play mr-2"></i> <span data-i18n="play">Mulai Bermain</span>
+                </button>
+
+                <button onclick="showHistory()" class="glass-panel bento-item p-3 sm:p-4 rounded-2xl flex flex-col items-center justify-center gap-2 hover:bg-white/5 border border-white/5">
+                    <i class="fa-solid fa-clock-rotate-left text-xl sm:text-2xl text-purple-400"></i>
+                    <span class="text-xs sm:text-sm font-semibold" data-i18n="history">Riwayat</span>
+                </button>
+
+                <button onclick="showHowToPlay()" class="glass-panel bento-item p-3 sm:p-4 rounded-2xl flex flex-col items-center justify-center gap-2 hover:bg-white/5 border border-white/5">
+                    <i class="fa-solid fa-circle-question text-xl sm:text-2xl text-green-400"></i>
+                    <span class="text-xs sm:text-sm font-semibold" data-i18n="howToPlay">Cara Main</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 2. MODE SELECT SCREEN -->
+        <div id="screen-modes" class="screen">
+            <h2 class="text-lg sm:text-xl font-bold mb-3 sm:mb-4" data-i18n="selectMode">Pilih Mode Game</h2>
+            <div class="grid grid-cols-1 gap-2 sm:gap-3 overflow-y-auto max-h-[50vh] sm:max-h-[60vh] pb-2 pr-1 custom-scrollbar">
+                
+                <button onclick="startGame(1)" class="glass-panel bento-item p-3 sm:p-4 rounded-xl flex items-center text-left border border-blue-500/20 hover:bg-blue-500/10">
+                    <div class="bg-blue-500/20 w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-center mr-3 sm:mr-4 shrink-0">
+                        <i class="fa-solid fa-bullseye text-blue-400 text-lg sm:text-xl"></i>
+                    </div>
+                    <div>
+                        <div class="font-bold text-sm sm:text-base text-blue-400" data-i18n="mode1">Tepat Waktu</div>
+                        <div class="text-[10px] sm:text-xs text-gray-400 mt-0.5" data-i18n="mode1Desc">Layar buta! Hentikan timer tepat di target acak (0.1s).</div>
+                    </div>
+                </button>
+
+                <button onclick="startGame(2)" class="glass-panel bento-item p-3 sm:p-4 rounded-xl flex items-center text-left border border-green-500/20 hover:bg-green-500/10">
+                    <div class="bg-green-500/20 w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-center mr-3 sm:mr-4 shrink-0">
+                        <i class="fa-solid fa-bolt text-green-400 text-lg sm:text-xl"></i>
+                    </div>
+                    <div>
+                        <div class="font-bold text-sm sm:text-base text-green-400" data-i18n="mode2">Reaksi Tercepat</div>
+                        <div class="text-[10px] sm:text-xs text-gray-400 mt-0.5" data-i18n="mode2Desc">Klik secepat mungkin saat layar berubah hijau.</div>
+                    </div>
+                </button>
+
+                <button onclick="startGame(3)" class="glass-panel bento-item p-3 sm:p-4 rounded-xl flex items-center text-left border border-orange-500/20 hover:bg-orange-500/10">
+                    <div class="bg-orange-500/20 w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-center mr-3 sm:mr-4 shrink-0">
+                        <i class="fa-solid fa-hand-pointer text-orange-400 text-lg sm:text-xl"></i>
+                    </div>
+                    <div>
+                        <div class="font-bold text-sm sm:text-base text-orange-400" data-i18n="mode3">Gak Boleh Lewat!</div>
+                        <div class="text-[10px] sm:text-xs text-gray-400 mt-0.5" data-i18n="mode3Desc">Spam klik untuk skor, tapi BERHENTI sebelum target waktu.</div>
+                    </div>
+                </button>
+
+                <button onclick="startGame(4)" class="glass-panel bento-item p-3 sm:p-4 rounded-xl flex items-center text-left border border-purple-500/20 hover:bg-purple-500/10">
+                    <div class="bg-purple-500/20 w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-center mr-3 sm:mr-4 shrink-0">
+                        <i class="fa-solid fa-headphones text-purple-400 text-lg sm:text-xl"></i>
+                    </div>
+                    <div>
+                        <div class="font-bold text-sm sm:text-base text-purple-400" data-i18n="mode4">Tebak Waktu</div>
+                        <div class="text-[10px] sm:text-xs text-gray-400 mt-0.5" data-i18n="mode4Desc">Dengar suara timer buta, lalu ketik tebakan waktumu!</div>
+                    </div>
+                </button>
+            </div>
+            
+            <button onclick="showScreen('screen-start')" class="mt-4 sm:mt-5 w-full bg-white/5 hover:bg-white/10 py-2.5 sm:py-3 rounded-xl font-semibold transition text-xs sm:text-sm">
+                <i class="fa-solid fa-arrow-left mr-1"></i> <span data-i18n="back">Kembali</span>
+            </button>
+        </div>
+
+        <!-- 3. GAME SCREEN -->
+        <div id="screen-game" class="screen flex-col justify-center min-h-[300px] sm:min-h-[350px]">
+            <div class="flex justify-between items-center mb-4 sm:mb-6">
+                <div id="targetDisplay" class="glass-panel px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-bold text-blue-400 hidden">Target: 3.5s</div>
+                <div id="clickScoreDisplay" class="glass-panel px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-bold text-orange-400 hidden">Skor: 0</div>
+            </div>
+            
+            <div class="flex-grow flex flex-col items-center justify-center">
+                <div id="timerDisplay" class="text-6xl sm:text-7xl font-black font-mono tracking-tighter mb-8 sm:mb-10 drop-shadow-[0_0_15px_rgba(255,255,255,0.2)] transition-opacity duration-300">
+                    0.0
+                </div>
+                
+                <button id="gameActionBtn" class="btn-neon w-28 h-28 sm:w-36 sm:h-36 rounded-full bg-blue-600 flex items-center justify-center text-xl sm:text-2xl font-black shadow-[0_0_30px_rgba(37,99,235,0.4)] border-[3px] sm:border-4 border-blue-400/30">
+                    START
+                </button>
+                <p id="gameInstruction" class="text-gray-400 text-xs sm:text-sm mt-6 sm:mt-8 h-5 text-center">Ketuk untuk mulai</p>
+            </div>
+        </div>
+
+        <!-- 4. END SCREEN -->
+        <div id="screen-end" class="screen">
+            <div class="glass-panel p-5 sm:p-6 rounded-3xl border border-white/10 text-center mb-5 sm:mb-6">
+                <h2 class="text-xl sm:text-2xl font-bold mb-1 text-gray-300" id="resultTitle">Hasil</h2>
+                <div class="text-4xl sm:text-5xl font-black font-mono my-3 sm:my-4 text-white drop-shadow-md" id="resultValue">0.0s</div>
+                <p class="text-xs sm:text-sm text-blue-400 font-semibold whitespace-pre-line" id="resultMessage">Selisih: 0.1s</p>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-2 sm:gap-3">
+                <button onclick="shareCurrentResult()" class="col-span-2 glass-panel bg-indigo-600/20 hover:bg-indigo-600/40 border border-indigo-500/30 py-2.5 sm:py-3 rounded-xl font-bold transition flex justify-center items-center gap-2 text-sm sm:text-base">
+                    <i class="fa-solid fa-share-nodes"></i> <span data-i18n="shareResult">Bagikan Hasil</span>
+                </button>
+                <button onclick="startGame(currentMode)" class="btn-neon bg-blue-600 hover:bg-blue-500 py-2.5 sm:py-3 rounded-xl font-bold transition">
+                    <i class="fa-solid fa-rotate-right"></i>
+                </button>
+                <button onclick="showScreen('screen-modes')" class="bg-white/10 hover:bg-white/20 py-2.5 sm:py-3 rounded-xl font-semibold transition">
+                    <i class="fa-solid fa-house"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- 5. HISTORY SCREEN -->
+        <div id="screen-history" class="screen">
+            <h2 class="text-lg sm:text-xl font-bold mb-3 sm:mb-4" data-i18n="historyTitle">Riwayat Permainan</h2>
+            <div id="historyList" class="space-y-2 overflow-y-auto max-h-[50vh] pr-1 custom-scrollbar">
+                <!-- History Items -->
+            </div>
+            <div class="flex gap-2 sm:gap-3 mt-4 sm:mt-5">
+                <button onclick="clearHistory()" class="flex-1 bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30 py-2.5 sm:py-3 rounded-xl font-semibold transition text-xs sm:text-sm">
+                    <i class="fa-solid fa-trash mr-1"></i> <span data-i18n="btnDelete">Hapus</span>
+                </button>
+                <button onclick="showScreen('screen-start')" class="flex-1 bg-white/5 hover:bg-white/10 py-2.5 sm:py-3 rounded-xl font-semibold transition text-xs sm:text-sm">
+                    <i class="fa-solid fa-arrow-left mr-1"></i> <span data-i18n="backHistory">Kembali</span>
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Copyright Footer -->
+    <div class="mt-6 text-center text-[10px] sm:text-xs text-gray-500 w-full max-w-md px-4 z-0">
+        &copy; 2026 
+        <a href="https://jasonpw.web.id/" target="_blank" class="hover:text-blue-400 transition font-medium">JASONPW</a> &bull;
+        <a href="https://ycylstudio.web.id/" target="_blank" class="hover:text-purple-400 transition font-medium">YCYL Studio</a><br>
+        <a href="https://github.com/JPROJECT-1" target="_blank" class="hover:text-white transition underline mt-1 inline-block">GitHub Project</a>
+    </div>
+
+    <!-- JAVASCRIPT -->
+    <script>
+        // --- Globals & Initialization ---
+        let currentLang = 'id';
+
+        // --- Custom UI Elements ---
+        function customToast(msg) {
+            const toast = document.getElementById('custom-toast');
+            toast.innerText = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        function customAlert(title, desc) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-desc').innerText = desc;
+            document.getElementById('modal-actions').innerHTML = `
+                <button onclick="closeModal()" class="bg-blue-600 hover:bg-blue-500 px-6 py-2 rounded-lg font-bold w-full">OK</button>
+            `;
+            document.getElementById('custom-modal-overlay').style.display = 'flex';
+        }
+
+        function customConfirm(title, desc, onConfirm) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-desc').innerText = desc;
+            
+            let btnCancel = currentLang === 'id' ? 'Batal' : 'Cancel';
+            let btnYes = currentLang === 'id' ? 'Ya, Hapus' : 'Yes, Delete';
+
+            document.getElementById('modal-actions').innerHTML = `
+                <button onclick="closeModal()" class="bg-white/10 hover:bg-white/20 px-4 py-2 sm:py-2.5 rounded-lg font-semibold flex-1">${btnCancel}</button>
+                <button id="btn-confirm-yes" class="bg-red-600 hover:bg-red-500 px-4 py-2 sm:py-2.5 rounded-lg font-bold flex-1">${btnYes}</button>
+            `;
+            document.getElementById('custom-modal-overlay').style.display = 'flex';
+            document.getElementById('btn-confirm-yes').onclick = () => {
+                closeModal();
+                if(onConfirm) onConfirm();
+            };
+        }
+
+        function customInputPrompt(title, desc, btnText, onConfirm) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-desc').innerText = desc;
+            
+            let placeholderTxt = currentLang === 'id' ? 'Cth: 5.5' : 'Ex: 5.5';
+
+            document.getElementById('modal-actions').innerHTML = `
+                <input type="number" id="prompt-input" step="0.1" min="0.1" class="w-full bg-black/30 border border-white/20 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50 rounded-xl px-4 py-2.5 sm:py-3 mb-3 text-white text-center font-bold text-lg sm:text-xl outline-none transition" placeholder="${placeholderTxt}">
+                <div class="flex gap-2 w-full">
+                    <button id="btn-prompt-yes" class="bg-blue-600 hover:bg-blue-500 px-4 py-2.5 sm:py-3 rounded-xl font-bold w-full text-white shadow-lg shadow-blue-500/30">${btnText}</button>
+                </div>
+            `;
+            document.getElementById('custom-modal-overlay').style.display = 'flex';
+            document.getElementById('prompt-input').focus();
+            
+            document.getElementById('btn-prompt-yes').onclick = () => {
+                const val = parseFloat(document.getElementById('prompt-input').value);
+                if (isNaN(val) || val <= 0) {
+                    customToast(currentLang === 'id' ? "Masukkan angka valid!" : "Enter a valid number!");
+                    return;
+                }
+                closeModal();
+                if(onConfirm) onConfirm(val);
+            };
+        }
+
+        function closeModal() {
+            document.getElementById('custom-modal-overlay').style.display = 'none';
+        }
+
+        // --- Audio System ---
+        let audioCtx;
+        let isSoundEnabled = true;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+
+        function playTick() {
+            if (!isSoundEnabled || !audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+            osc.start(audioCtx.currentTime);
+            osc.stop(audioCtx.currentTime + 0.05);
+        }
+        
+        function playBuzzer() {
+            if (!isSoundEnabled || !audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+            osc.start(audioCtx.currentTime);
+            osc.stop(audioCtx.currentTime + 0.3);
+        }
+
+        document.getElementById('soundBtn').addEventListener('click', () => {
+            isSoundEnabled = !isSoundEnabled;
+            const icon = document.querySelector('#soundBtn i');
+            icon.className = isSoundEnabled ? 'fa-solid fa-volume-high text-blue-400 text-sm sm:text-base' : 'fa-solid fa-volume-xmark text-gray-500 text-sm sm:text-base';
+            
+            let msg = isSoundEnabled 
+                ? (currentLang === 'id' ? "Suara diaktifkan" : "Sound enabled") 
+                : (currentLang === 'id' ? "Suara dimatikan" : "Sound disabled");
+            customToast(msg);
+            
+            if(isSoundEnabled) initAudio();
+        });
+
+        // --- Data & History ---
+        let totalScore = parseInt(localStorage.getItem('blindtimer_total_score')) || 0;
+        let playHistory = JSON.parse(localStorage.getItem('blindtimer_history')) || [];
+        
+        function updateGlobalScoreDisplay() {
+            document.getElementById('globalScoreDisplay').innerText = totalScore.toLocaleString();
+        }
+        updateGlobalScoreDisplay();
+
+        function addScore(points) {
+            totalScore += points;
+            localStorage.setItem('blindtimer_total_score', totalScore);
+            updateGlobalScoreDisplay();
+        }
+
+        function saveHistory(modeId, resultText, scoreGained) {
+            const date = new Date().toLocaleDateString('id-ID', {day: 'numeric', month: 'short', hour: '2-digit', minute:'2-digit'});
+            playHistory.unshift({ modeId: modeId, result: resultText, score: scoreGained, date: date });
+            if (playHistory.length > 20) playHistory.pop();
+            localStorage.setItem('blindtimer_history', JSON.stringify(playHistory));
+        }
+
+        // --- Translations ---
+        const dict = {
+            id: {
+                totalScore: "Total Skor Pusat", play: "Mulai Bermain", history: "Riwayat", historyTitle: "Riwayat Permainan", howToPlay: "Cara Main",
+                selectMode: "Pilih Mode Game", back: "Kembali", backHistory: "Kembali", shareScore: "Share Skor", shareResult: "Bagikan Hasil", btnDelete: "Hapus",
+                mode1: "Tepat Waktu", mode1Desc: "Layar buta! Hentikan timer tepat di target acak (0.1s).",
+                mode2: "Reaksi Tercepat", mode2Desc: "Klik secepat mungkin saat layar berubah hijau.",
+                mode3: "Gak Boleh Lewat!", mode3Desc: "Spam klik untuk skor, BERHENTI sebelum target.",
+                mode4: "Tebak Waktu", mode4Desc: "Dengar suara timer buta, lalu ketik tebakan waktumu!",
+                btnStart: "START", btnStop: "STOP", btnWait: "TUNGGU",
+                howToText: "MODE 1: Hentikan waktu TEPAT di target (pembulatan 0.1s). Timer langsung hilang saat ditekan!\n\nMODE 2: Tunggu layar hijau, lalu klik cepat.\n\nMODE 3: Klik terus untuk skor, BERHENTI sebelum target waktu lewat.\n\nMODE 4: Waktu akan diacak dan berjalan sembunyi. Dengarkan suaranya. Saat berhenti tiba-tiba, tebak dan ketik detik & milisekonnya (cth: 3.5)."
+            },
+            en: {
+                totalScore: "Global Score", play: "Play Game", history: "History", historyTitle: "Play History", howToPlay: "How to Play",
+                selectMode: "Select Mode", back: "Back", backHistory: "Back", shareScore: "Share Score", shareResult: "Share Result", btnDelete: "Delete",
+                mode1: "Exact Time", mode1Desc: "Blind screen! Stop exactly at random target (0.1s).",
+                mode2: "Fast Reaction", mode2Desc: "Click fast when screen turns green.",
+                mode3: "Don't Pass It!", mode3Desc: "Spam click for score, STOP before target.",
+                mode4: "Guess Time", mode4Desc: "Listen to the blind timer, then type your guess!",
+                btnStart: "START", btnStop: "STOP", btnWait: "WAIT",
+                howToText: "MODE 1: Stop EXACTLY at target time. Timer hides immediately!\n\nMODE 2: Wait for green, click fast.\n\nMODE 3: Spam click for score, STOP before target time hits.\n\nMODE 4: Random hidden timer starts. Listen to the sound. When it stops, type your guess in sec & millisec (ex: 3.5)."
+            }
+        };
+
+        document.getElementById('langBtn').addEventListener('click', () => {
+            currentLang = currentLang === 'id' ? 'en' : 'id';
+            document.getElementById('langBtn').innerText = currentLang.toUpperCase();
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (dict[currentLang][key]) el.innerHTML = dict[currentLang][key];
+            });
+            
+            if(document.getElementById('screen-history').classList.contains('active')) {
+                showHistory();
+            }
+        });
+
+        function showHowToPlay() {
+            customAlert(dict[currentLang].howToPlay, dict[currentLang].howToText);
+        }
+
+        // --- Helper for Mode Names ---
+        // Kini hanya me-return "Mode X" tanpa tambahan kurung.
+        function getModeNameTranslated(modeId) {
+            return `Mode ${modeId}`;
+        }
+
+        // --- Game Logic ---
+        let currentMode = 1;
+        let gameState = 'ready';
+        let startTime = 0;
+        let timerInterval;
+        let metronomeInterval;
+        let timeoutId;
+        
+        let targetTime = 0;
+        let clickScoreMode3 = 0;
+
+        const timerDisplay = document.getElementById('timerDisplay');
+        const gameActionBtn = document.getElementById('gameActionBtn');
+        const targetDisplay = document.getElementById('targetDisplay');
+        const clickScoreDisplay = document.getElementById('clickScoreDisplay');
+        const instruction = document.getElementById('gameInstruction');
+
+        function getRandomTarget(min, max) {
+            return (Math.floor(Math.random() * ((max - min) * 10)) + min * 10) / 10;
+        }
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+            if(screenId === 'screen-game') resetGameUI();
+        }
+
+        function resetGameUI() {
+            clearInterval(timerInterval);
+            clearInterval(metronomeInterval);
+            clearTimeout(timeoutId);
+            
+            timerDisplay.innerText = "0.0";
+            timerDisplay.classList.remove('opacity-0'); 
+            
+            gameActionBtn.innerText = dict[currentLang].btnStart;
+            gameActionBtn.className = "btn-neon w-28 h-28 sm:w-36 sm:h-36 rounded-full bg-blue-600 flex items-center justify-center text-xl sm:text-2xl font-black shadow-[0_0_30px_rgba(37,99,235,0.4)] border-[3px] sm:border-4 border-blue-400/30 transition-all pointer-events-auto";
+            
+            targetDisplay.classList.add('hidden');
+            clickScoreDisplay.classList.add('hidden');
+            instruction.innerText = currentLang === 'id' ? "Ketuk untuk mulai" : "Tap to start";
+            
+            document.body.style.backgroundColor = "#090e17";
+            gameState = 'ready';
+        }
+
+        function startGame(mode) {
+            initAudio();
+            currentMode = mode;
+            showScreen('screen-game');
+            
+            if (mode === 1) {
+                targetTime = getRandomTarget(3, 10);
+                targetDisplay.innerText = `Target: ${targetTime.toFixed(1)}s`;
+                targetDisplay.classList.remove('hidden');
+                instruction.innerText = currentLang === 'id' ? "Timer buta saat dimulai!" : "Timer hides when started!";
+            } else if (mode === 3) {
+                targetTime = getRandomTarget(4, 8);
+                targetDisplay.innerText = currentLang === 'id' ? `Batas: ${targetTime.toFixed(1)}s` : `Limit: ${targetTime.toFixed(1)}s`;
+                targetDisplay.classList.remove('hidden');
+                clickScoreMode3 = 0;
+                clickScoreDisplay.innerText = currentLang === 'id' ? `Skor: 0` : `Score: 0`;
+                clickScoreDisplay.classList.remove('hidden');
+            } else if (mode === 4) {
+                targetDisplay.innerText = currentLang === 'id' ? "Target: Rahasia" : "Target: Secret";
+                targetDisplay.classList.remove('hidden');
+                instruction.innerText = currentLang === 'id' ? "Fokus dengar suara timer!" : "Listen to the timer sound!";
+            }
+        }
+
+        function updateTimer() {
+            let elapsed = (Date.now() - startTime) / 1000;
+            timerDisplay.innerText = elapsed.toFixed(1);
+
+            if (elapsed >= 60) {
+                endGame(elapsed, true);
+                return;
+            }
+
+            if (currentMode === 3 && elapsed >= targetTime) {
+                endGameMode3Success();
+                return;
+            }
+        }
+
+        function handleAction() {
+            initAudio();
+            if (gameState === 'ready') {
+                if (currentMode === 2) {
+                    gameState = 'waiting';
+                    gameActionBtn.innerText = dict[currentLang].btnWait;
+                    gameActionBtn.className = "btn-neon w-28 h-28 sm:w-36 sm:h-36 rounded-full bg-red-600 flex items-center justify-center text-xl sm:text-2xl font-black shadow-[0_0_30px_rgba(220,38,38,0.4)] border-[3px] sm:border-4 border-red-400/30 transition-all";
+                    
+                    const waitTime = Math.random() * 3000 + 2000;
+                    timeoutId = setTimeout(() => {
+                        gameState = 'running';
+                        startTime = Date.now();
+                        document.body.style.backgroundColor = "#16a34a";
+                        gameActionBtn.innerText = "KLIK!";
+                        gameActionBtn.className = "btn-neon w-28 h-28 sm:w-36 sm:h-36 rounded-full bg-green-500 flex items-center justify-center text-xl sm:text-2xl font-black shadow-[0_0_30px_rgba(34,197,94,0.4)] border-[3px] sm:border-4 border-green-400/30 transition-all";
+                        timerInterval = setInterval(updateTimer, 50);
+                    }, waitTime);
+                    
+                } else if (currentMode === 4) {
+                    gameState = 'running';
+                    startTime = Date.now();
+                    targetTime = getRandomTarget(3, 10);
+                    
+                    gameActionBtn.innerText = currentLang === 'id' ? "DENGARKAN" : "LISTEN";
+                    gameActionBtn.className = "btn-neon w-28 h-28 sm:w-36 sm:h-36 rounded-full bg-purple-600 flex items-center justify-center text-sm sm:text-xl font-black shadow-[0_0_30px_rgba(147,51,234,0.4)] border-[3px] sm:border-4 border-purple-400/30 transition-all pointer-events-none";
+                    timerDisplay.classList.add('opacity-0');
+                    
+                    metronomeInterval = setInterval(playTick, 1000);
+                    
+                    timeoutId = setTimeout(() => {
+                        clearInterval(metronomeInterval);
+                        playBuzzer();
+                        gameState = 'ended';
+                        
+                        let title = currentLang === 'id' ? "Waktu Berhenti!" : "Time Stopped!";
+                        let desc = currentLang === 'id' 
+                            ? "Tebak, berapa detik waktu tadi berjalan?\n(Format desimal, misal: 4.5)" 
+                            : "Guess, how many seconds did it run?\n(Decimal format, ex: 4.5)";
+                        let btnTxt = currentLang === 'id' ? "Kirim Tebakan" : "Submit Guess";
+                        
+                        customInputPrompt(title, desc, btnTxt, (guess) => {
+                            endGameMode4(guess, targetTime);
+                        });
+                    }, targetTime * 1000);
+                    
+                } else {
+                    gameState = 'running';
+                    startTime = Date.now();
+                    gameActionBtn.innerText = currentMode === 3 ? "KLIK!" : dict[currentLang].btnStop;
+                    gameActionBtn.className = "btn-neon w-28 h-28 sm:w-36 sm:h-36 rounded-full bg-red-600 flex items-center justify-center text-xl sm:text-2xl font-black shadow-[0_0_30px_rgba(220,38,38,0.4)] border-[3px] sm:border-4 border-red-400/30 transition-all";
+                    
+                    if (currentMode === 1) {
+                        timerDisplay.classList.add('opacity-0');
+                    }
+
+                    timerInterval = setInterval(updateTimer, 50);
+                    metronomeInterval = setInterval(playTick, 1000); 
+                    
+                    if(currentMode === 3) {
+                        instruction.innerText = currentLang === 'id' ? "BERHENTI SEBELUM BATAS!" : "STOP BEFORE LIMIT!";
+                    }
+                }
+            } 
+            else if (gameState === 'waiting') {
+                clearTimeout(timeoutId);
+                playBuzzer();
+                let title = currentLang === 'id' ? "Terlalu Cepat!" : "Too Early!";
+                let msg = currentLang === 'id' ? "Tunggu layar hijau!" : "Wait for green screen!";
+                endResult(title, "0.0s", msg, 0);
+            }
+            else if (gameState === 'running') {
+                let elapsed = (Date.now() - startTime) / 1000;
+                
+                if (currentMode === 3) {
+                    if (elapsed >= targetTime) {
+                        playBuzzer();
+                        let title = currentLang === 'id' ? "MELEDAK! 💥" : "BUSTED! 💥";
+                        let val = currentLang === 'id' ? "Skor: 0" : "Score: 0";
+                        let msg = currentLang === 'id' 
+                            ? `Kamu klik setelah ${targetTime.toFixed(1)}s (Batas waktu!).`
+                            : `You clicked after ${targetTime.toFixed(1)}s (Time limit!).`;
+                        endResult(title, val, msg, 0);
+                    } else {
+                        clickScoreMode3++;
+                        clickScoreDisplay.innerText = currentLang === 'id' ? `Skor: ${clickScoreMode3}` : `Score: ${clickScoreMode3}`;
+                        
+                        gameActionBtn.style.transform = 'scale(0.9)';
+                        setTimeout(() => gameActionBtn.style.transform = 'scale(1)', 50);
+                    }
+                } else {
+                    endGame(elapsed); 
+                }
+            }
+        }
+
+        gameActionBtn.addEventListener('mousedown', (e) => { e.preventDefault(); handleAction(); });
+        gameActionBtn.addEventListener('touchstart', (e) => { e.preventDefault(); handleAction(); }, {passive: false});
+
+        function endGameMode4(guess, actual) {
+            let diff = Math.abs(actual - guess);
+            let title = "";
+            let points = 0;
+            
+            if (diff === 0) {
+                title = "MIND READER! 🧠"; points = 200;
+            } else if (diff <= 0.2) {
+                title = currentLang === 'id' ? "Luar Biasa! 🔮" : "Incredible! 🔮"; points = 100;
+            } else if (diff <= 0.5) {
+                title = currentLang === 'id' ? "Insting Bagus" : "Good Instinct"; points = 50;
+            } else {
+                title = currentLang === 'id' ? "Meleset" : "Missed"; points = 5;
+            }
+            
+            let lblActual = currentLang === 'id' ? "Waktu Asli" : "Actual Time";
+            let lblGuess = currentLang === 'id' ? "Tebakanmu" : "Your Guess";
+            let lblDiff = currentLang === 'id' ? "Selisih" : "Diff";
+            let lblPts = currentLang === 'id' ? "Poin" : "Pts";
+
+            let msg = `${lblActual}: ${actual.toFixed(1)}s\n${lblGuess}: ${guess.toFixed(1)}s\n${lblDiff}: ${diff.toFixed(1)}s\n+${points} ${lblPts}`;
+            let val = guess.toFixed(1) + "s";
+            
+            if (points > 0) {
+                addScore(points);
+                saveHistory(4, val, points);
+            }
+            
+            endResult(title, val, msg);
+        }
+
+        function endGameMode3Success() {
+            clearInterval(timerInterval);
+            clearInterval(metronomeInterval);
+            gameState = 'ended';
+            
+            let gained = clickScoreMode3 * 10; 
+            addScore(gained);
+            
+            let title = currentLang === 'id' ? "Selamat! 🎉" : "Congrats! 🎉";
+            let val = currentLang === 'id' ? `Skor: ${clickScoreMode3}` : `Score: ${clickScoreMode3}`;
+            let msg = currentLang === 'id' 
+                ? `Kamu berhenti tepat waktu!\n+${gained} Poin Total`
+                : `You stopped exactly in time!\n+${gained} Total Pts`;
+
+            saveHistory(3, val, gained);
+            endResult(title, val, msg, gained);
+        }
+
+        function endGame(elapsed, timeout = false) {
+            clearInterval(timerInterval);
+            clearInterval(metronomeInterval);
+            gameState = 'ended';
+            
+            let finalTime = Math.round(elapsed * 10) / 10;
+            let title = timeout ? "Time's Up!" : (currentLang === 'id' ? "Hasil" : "Result");
+            let val = finalTime.toFixed(1) + "s";
+            let msg = "";
+            let points = 0;
+            
+            let lblTarget = "Target";
+            let lblDiff = currentLang === 'id' ? "Selisih" : "Diff";
+            let lblPts = currentLang === 'id' ? "Poin" : "Pts";
+
+            if (timeout) {
+                msg = currentLang === 'id' ? "Batas maksimal 1 menit!" : "Max limit 1 minute!";
+            } else {
+                switch(currentMode) {
+                    case 1:
+                        let diff1 = Math.abs(targetTime - finalTime);
+                        if (diff1 === 0) {
+                            title = currentLang === 'id' ? "SEMPURNA! 🎯" : "PERFECT! 🎯"; points = 100;
+                        } else if (diff1 <= 0.2) {
+                            title = currentLang === 'id' ? "Hebat! 🔥" : "Awesome! 🔥"; points = 50;
+                        } else {
+                            title = currentLang === 'id' ? "Kurang Pas" : "Not Quite"; points = 10;
+                        }
+                        msg = `${lblTarget}: ${targetTime.toFixed(1)}s\n${lblDiff}: ${diff1.toFixed(1)}s\n+${points} ${lblPts}`;
+                        break;
+                    case 2:
+                        title = currentLang === 'id' ? "Kecepatan Reaksi" : "Reaction Speed";
+                        if(finalTime < 0.3) points = 100;
+                        else if(finalTime < 0.5) points = 50;
+                        else points = 10;
+                        
+                        let lblReaction = currentLang === 'id' ? "Waktu reaksimu" : "Your reaction";
+                        msg = `${lblReaction}: ${finalTime.toFixed(3)}s\n+${points} ${lblPts}`;
+                        val = finalTime.toFixed(3) + "s"; 
+                        break;
+                }
+            }
+
+            if (points > 0) {
+                addScore(points);
+                saveHistory(currentMode, val, points);
+            }
+
+            endResult(title, val, msg);
+        }
+
+        let lastResultVal = "";
+        let lastResultMode = "";
+
+        function endResult(title, value, message, points) {
+            document.getElementById('resultTitle').innerText = title;
+            document.getElementById('resultValue').innerText = value;
+            document.getElementById('resultMessage').innerText = message;
+            
+            lastResultVal = value;
+            lastResultMode = currentMode;
+            
+            document.body.style.backgroundColor = "#090e17"; 
+            showScreen('screen-end');
+        }
+
+        function showHistory() {
+            const list = document.getElementById('historyList');
+            list.innerHTML = "";
+            
+            if (playHistory.length === 0) {
+                let emptyTxt = currentLang === 'id' ? "Belum ada riwayat main." : "No play history yet.";
+                list.innerHTML = `<div class="text-center text-gray-500 my-8 text-xs sm:text-sm">${emptyTxt}</div>`;
+            } else {
+                playHistory.forEach(item => {
+                    let displayResult = item.result;
+                    if(currentLang === 'en' && displayResult.includes("Skor:")) {
+                        displayResult = displayResult.replace("Skor:", "Score:");
+                    } else if (currentLang === 'id' && displayResult.includes("Score:")) {
+                        displayResult = displayResult.replace("Score:", "Skor:");
+                    }
+
+                    let lblPts = currentLang === 'id' ? "Pt" : "Pts";
+                    
+                    // Format penamaan mode (sekarang seragam menjadi "Mode 1", dsb.)
+                    // Jika data history merupakan data lama (teks murni dari versi terdahulu)
+                    // Maka hapus kurungnya via string manipulation: `.split(" (")[0]`
+                    let modeString = item.modeId !== undefined 
+                        ? getModeNameTranslated(item.modeId) 
+                        : (item.mode ? item.mode.split(" (")[0] : "Mode");
+
+                    list.innerHTML += `
+                        <div class="glass-panel p-2.5 sm:p-3 rounded-xl mb-2 flex justify-between items-center text-xs sm:text-sm border border-white/5">
+                            <div>
+                                <div class="font-bold text-blue-300">${modeString}</div>
+                                <div class="text-[10px] sm:text-xs text-gray-400">${item.date}</div>
+                            </div>
+                            <div class="text-right">
+                                <div class="font-bold">${displayResult}</div>
+                                <div class="text-[10px] sm:text-xs text-green-400">+${item.score} ${lblPts}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            showScreen('screen-history');
+        }
+
+        function clearHistory() {
+            let title = currentLang === 'id' ? "Hapus Riwayat?" : "Delete History?";
+            let desc = currentLang === 'id' 
+                ? "Total skor pusat tidak akan dihapus, hanya riwayat yang hilang." 
+                : "Global score won't be deleted, only the history list.";
+
+            customConfirm(title, desc, () => {
+                playHistory = [];
+                localStorage.removeItem('blindtimer_history');
+                showHistory();
+                customToast(currentLang === 'id' ? "Riwayat dihapus" : "History deleted");
+            });
+        }
+
+        function shareCurrentResult() {
+            let modeName = getModeNameTranslated(lastResultMode);
+            
+            let text = currentLang === 'id' 
+                ? `Gila! Insting waktu gue di BlindTimer (${modeName}) tembus ${lastResultVal}. Total skor pusat gue sekarang ${totalScore}! Berani adu insting waktu?`
+                : `Crazy! My time instinct on BlindTimer (${modeName}) hit ${lastResultVal}. My global score is now ${totalScore}! Dare to challenge my time instinct?`;
+
+            if (navigator.share) {
+                navigator.share({
+                    title: 'BlindTimer Score',
+                    text: text,
+                    url: window.location.href
+                }).catch(err => console.log('Share error:', err));
+            } else {
+                navigator.clipboard.writeText(text + " " + window.location.href);
+                customToast(currentLang === 'id' ? "Hasil dicopy ke clipboard!" : "Copied to clipboard!");
+            }
+        }
+
+        function shareGlobalScore() {
+            let text = currentLang === 'id' 
+                ? `Total skor pusat gue di BlindTimer udah mencapai ${totalScore} poin! Main BlindTimer sekarang buat asah insting waktu lo!`
+                : `My global score on BlindTimer has reached ${totalScore} points! Play BlindTimer now to sharpen your time instinct!`;
+
+            if (navigator.share) {
+                navigator.share({
+                    title: 'BlindTimer Global Score',
+                    text: text,
+                    url: window.location.href
+                }).catch(err => console.log('Share error:', err));
+            } else {
+                navigator.clipboard.writeText(text + " " + window.location.href);
+                customToast(currentLang === 'id' ? "Skor dicopy ke clipboard!" : "Score copied to clipboard!");
+            }
+        }
+    </script>
+</body>
+</html>
